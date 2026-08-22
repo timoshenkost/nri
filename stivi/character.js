@@ -22,6 +22,12 @@ const CHARACTER = {
   // Ключи, которые есть только у этого листа — попадут в экспорт.
   extraSaveKeys: ['schemes', 'daily_creation_state'],
 
+  /* Старая версия листа открывалась с диска, а у file:// location.host —
+     пустая строка. То есть перенос сработает при локальном открытии, где
+     лежит именно сохранение Стиви, и НЕ сработает на github.io, где под
+     теми же ключами лежат данные Оникса. */
+  legacyOrigin: '',
+
   tabs: [
     { id: 'spells-tab',  file: 'spells_book.html', icon: '⚙',  title: 'Заклинания' },
     { id: 'tools-tab',   file: 'tools.html',       icon: '🛠', title: 'Инструменты' },

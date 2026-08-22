@@ -23,6 +23,12 @@ const CHARACTER = {
   // Ключи, которые есть только у этого листа — попадут в экспорт.
   extraSaveKeys: ['wild_shape_slots', 'prepared_forms_data'],
 
+  /* Старая версия листа жила на timoshenkost.github.io и писала в ключи
+     без префикса. Новый адрес — тот же origin, только путь другой, поэтому
+     данные видны и переносятся сами. На любом другом хосте переноса не
+     будет: там под этими ключами лежит чужое. */
+  legacyOrigin: 'timoshenkost.github.io',
+
   tabs: [
     { id: 'spells-tab',  file: 'spells_book.html', icon: '📜', title: 'Книга',    label: 'Книга' },
     { id: 'forms-tab',   file: 'forms.html',       icon: '🐻', title: 'Облики',   label: 'Облики' },
