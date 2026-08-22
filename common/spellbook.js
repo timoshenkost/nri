@@ -20,8 +20,22 @@ const Spellbook = (() => {
   const slotDefs = CHARACTER.slots || {};
   const featureDefs = CHARACTER.features || {};
 
-  /* Копия данных: не мутируем массив из spells.js. */
-  const spells = initialSpells.map(s => ({ ...s }));
+  /* Заклинание собирается из двух половин: механика из общей библиотеки
+     (common/spells.js) и принадлежность персонажу из его выборки. Имя —
+     ключ связи, поэтому опечатку важно заметить сразу, а не гадать, куда
+     пропало заклинание. */
+  const libraryByName = new Map(spellLibrary.map(s => [s.name, s]));
+  const missing = [];
+
+  const spells = characterSpells.map(sel => {
+    const lib = libraryByName.get(sel.name);
+    if (!lib) { missing.push(sel.name); return null; }
+    return { ...lib, ...sel };
+  }).filter(Boolean);
+
+  if (missing.length) {
+    console.warn('Нет в библиотеке заклинаний:', missing);
+  }
 
   let slots = Resources.merge(slotDefs, null);
   let features = Resources.merge(featureDefs, null);
@@ -141,9 +155,11 @@ const Spellbook = (() => {
       spell.isFree ? `<span class="badge badge-free" title="Один бесплатный каст до отдыха">${spell.freeUsed ? '○' : '●'}</span>` : ''
     ].join('');
 
+    const classes = (spell.classes || []).join(', ');
+
     const haystack = [
       spell.name, spell.school, spell.description, spell.roleplay,
-      spell.components, spell.duration, spell.range, spell.time
+      spell.components, spell.duration, spell.range, spell.time, classes
     ].join(' ').toLowerCase();
 
     return `
@@ -159,6 +175,7 @@ const Spellbook = (() => {
             <div><span class="label">Дистанция</span>${esc(spell.range)}</div>
             <div><span class="label">Компоненты</span>${esc(spell.components)}</div>
             <div><span class="label">Длительность</span>${esc(spell.duration)}</div>
+            ${classes ? `<div class="spell-classes"><span class="label">Классы</span>${esc(classes)}</div>` : ''}
           </div>
           <p style="white-space: pre-line;">${esc(spell.description)}</p>
           ${spell.roleplay ? `<p class="spell-roleplay">${esc(spell.roleplay)}</p>` : ''}
