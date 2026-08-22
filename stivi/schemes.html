@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#1a1a1a">
+    <title>Схемы</title>
+
+    <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet" href="../common/common.css">
+
+    <script src="character.js"></script>
+    <script src="../common/common.js"></script>
+    <script src="schemes.js"></script>
+
+    <style>
+        main { max-width: 700px; padding: 20px; }
+
+        details.recipe { margin-bottom: 12px; }
+
+        summary {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+            font-weight: normal;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .header-row > div:first-child {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 0;
+        }
+        .recipe-title {
+            font-weight: bold;
+            color: #fff;
+            font-size: 1.1rem;
+            line-height: 1.2;
+            word-wrap: break-word;
+        }
+        .recipe-type {
+            font-size: 0.7rem;
+            color: var(--accent-light);
+            opacity: 0.7;
+            text-transform: uppercase;
+        }
+        .total-status {
+            font-family: monospace;
+            color: var(--gold);
+            font-weight: bold;
+            white-space: nowrap;
+            text-align: right;
+            padding-top: 2px;
+        }
+
+        .progress-container {
+            width: 100%; height: 6px; background: #111;
+            border-radius: 3px; overflow: hidden; border: 1px solid #333;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--gold));
+            transition: width 0.4s;
+        }
+
+        .recipe.is-done .recipe-title::before {
+            content: "📜 ";
+            filter: sepia(1) saturate(5);
+        }
+        /* Готовность считается из фактического прогресса, а не из данных.
+           Отметка держится в медно-золотой палитре: штамп вместо значка. */
+        .recipe.is-complete { border-color: rgba(255, 179, 0, 0.45); }
+        .recipe.is-complete .recipe-title { color: var(--gold); }
+        .recipe.is-complete > summary .progress-fill {
+            background: var(--gold);
+            box-shadow: 0 0 8px rgba(255, 179, 0, 0.45);
+        }
+
+        .stamp {
+            font-family: inherit;
+            font-size: 0.6rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gold);
+            border: 1px solid rgba(255, 179, 0, 0.4);
+            border-radius: 3px;
+            padding: 2px 8px;
+            white-space: nowrap;
+            opacity: 0.9;
+        }
+
+        .recipe-content { padding: 15px; border-top: 1px solid #3d3d3d; background: rgba(0, 0, 0, 0.2); }
+        .info-block {
+            background: rgba(0, 0, 0, 0.3); padding: 10px; border-radius: 4px;
+            border-left: 2px solid var(--accent); margin-bottom: 12px;
+        }
+        .val { font-size: 0.9rem; line-height: 1.4; }
+
+        .phase-card {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid #3d3d3d;
+            padding: 12px; border-radius: 4px; margin-bottom: 15px;
+        }
+        .phase-header { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: flex-start; gap: 10px; }
+        .phase-name { font-size: 0.9rem; font-weight: bold; color: #fff; }
+        .phase-tool { font-size: 0.75rem; color: var(--accent-light); opacity: 0.8; }
+        .phase-dc {
+            background: var(--surface); color: var(--gold); padding: 2px 8px; border-radius: 10px;
+            font-size: 0.7rem; font-weight: bold; border: 1px solid var(--gold); white-space: nowrap;
+        }
+
+        .phase-controls {
+            display: flex; gap: 8px; margin-top: 12px;
+            align-items: flex-end; flex-wrap: wrap;
+        }
+        .ctl { display: flex; flex-direction: column; gap: 3px; }
+        .ctl-label {
+            font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--accent-light); opacity: 0.7; font-weight: bold;
+        }
+        .phase-controls input[type="number"] {
+            background: #000; border: 1px solid #444; color: var(--gold);
+            padding: 8px; width: 76px; border-radius: 4px; font-family: monospace;
+        }
+        .phase-controls input[type="number"]:focus { outline: none; border-color: var(--accent); }
+
+        .btn-add {
+            flex: 1 1 100px; background: var(--accent); color: #fff; border: none;
+            padding: 9px; border-radius: 4px; cursor: pointer; text-transform: uppercase;
+            font-size: 0.7rem; font-weight: bold; font-family: inherit; transition: 0.2s;
+        }
+        .btn-add:active { transform: scale(0.98); background: var(--accent-light); }
+
+        /* Строка с раскрытой формулой: видно, что именно запишется. */
+        .phase-preview {
+            display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+            margin-top: 8px; font-family: monospace; font-size: 0.72rem;
+            color: var(--gold); line-height: 1.4;
+        }
+        .phase-card.is-failed .phase-preview { color: #8a6a4a; }
+
+        .btn-manual {
+            background: none; border: none; color: #666; cursor: pointer;
+            font-family: inherit; font-size: 0.65rem; text-transform: uppercase;
+            letter-spacing: 1px; padding: 0; white-space: nowrap; transition: 0.2s;
+        }
+        .btn-manual:hover { color: var(--accent-light); }
+
+        .recipe-footer { margin-top: 20px; display: flex; justify-content: center; }
+        .btn-reset-recipe {
+            background: transparent; border: 1px solid #444; color: #666;
+            padding: 6px 15px; border-radius: 4px; cursor: pointer; font-family: inherit;
+            font-size: 0.65rem; text-transform: uppercase; transition: 0.2s;
+        }
+        .btn-reset-recipe:hover { border-color: var(--danger); color: var(--danger-light); }
+    </style>
+</head>
+<body>
+
+<header><h1>📜 Схемы</h1></header>
+
+<main>
+    <input id="search" class="search-input" type="search"
+           placeholder="Поиск по названию, эффекту или ресурсам…"
+           aria-label="Поиск по схемам">
+
+    <div id="recipe-list"></div>
+    <p class="search-empty" hidden>Ничего не найдено.</p>
+</main>
+
+<script>
+    const STORAGE_KEY = 'schemes';
+    let progressData = Store.get(STORAGE_KEY, {});
+    if (!progressData || typeof progressData !== 'object') progressData = {};
+
+    /* Значения полей ввода живут отдельно от разметки, иначе перерисовка
+       сбрасывала бы введённое число обратно на 10. */
+    const inputValues = {};
+    const list = document.getElementById('recipe-list');
+    let applyFilter = () => {};
+
+    function findRecipe(id) {
+        for (const category in initialRecipes) {
+            const found = initialRecipes[category].find(r => r.id === id);
+            if (found) return found;
+        }
+        return null;
+    }
+
+    function progressOf(recipe) {
+        const stored = progressData[recipe.id];
+        const arr = new Array(recipe.phases.length).fill(0);
+        if (Array.isArray(stored)) {
+            stored.forEach((v, i) => { if (i < arr.length) arr[i] = Number(v) || 0; });
+        }
+        return arr;
+    }
+
+    function updatePhaseProgress(recipeId, phaseIndex, amount, max) {
+        const recipe = findRecipe(recipeId);
+        if (!recipe) return;
+
+        const current = progressOf(recipe);
+        const delta = parseInt(amount, 10) || 0;
+        if (delta === 0) return;
+
+        current[phaseIndex] = Math.max(0, Math.min(current[phaseIndex] + delta, max));
+        progressData[recipeId] = current;
+        Store.set(STORAGE_KEY, progressData);
+
+        render();
+        showNotice(delta > 0 ? `Добавлено ${delta} очков работы` : `Снято ${-delta} очков работы`);
+    }
+
+    function renderRecipe(recipe) {
+        const pData = progressOf(recipe);
+        const totalMax = recipe.phases.reduce((sum, p) => sum + p.max, 0);
+        const totalCurrent = pData.reduce((sum, val) => sum + val, 0);
+        const totalPercent = totalMax > 0 ? (totalCurrent / totalMax) * 100 : 0;
+        const isComplete = totalMax > 0 && totalCurrent >= totalMax;
+
+        const haystack = [recipe.name, recipe.type, recipe.effect, recipe.resources]
+            .join(" ").toLowerCase();
+
+        return `
+        <details class="recipe ${recipe.done ? 'is-done' : ''} ${isComplete ? 'is-complete' : ''}"
+                 data-key="${esc(recipe.id)}" data-search="${esc(haystack)}">
+            <summary>
+                <div class="header-row">
+                    <div>
+                        <span class="recipe-title">${esc(recipe.name)}</span>
+                        <span class="recipe-type">${esc(recipe.type)}</span>
+                    </div>
+                    ${isComplete
+                        ? `<div class="stamp">Готово</div>`
+                        : `<div class="total-status">${totalCurrent} / ${totalMax}</div>`}
+                </div>
+                <div class="progress-container">
+                    <div class="progress-fill" style="width: ${totalPercent}%"></div>
+                </div>
+            </summary>
+
+            <div class="recipe-content">
+                <div class="info-block">
+                    <span class="label">Эффект</span>
+                    <div class="val" style="white-space: pre-line;">${esc(recipe.effect)}</div>
+                </div>
+                <div class="info-block">
+                    <span class="label">Ресурсы</span>
+                    <div class="val" style="white-space: pre-line;">${esc(recipe.resources)}</div>
+                </div>
+
+                <div class="section-header" style="margin: 15px 0; font-size: 0.65rem;">Этапы производства</div>
+
+                ${recipe.phases.map((phase, idx) => {
+                    const current = pData[idx];
+                    const percent = phase.max > 0 ? (current / phase.max) * 100 : 0;
+                    const checkId = `check-${recipe.id}-${idx}`;
+                    const hoursId = `hours-${recipe.id}-${idx}`;
+                    const checkVal = inputValues[checkId] !== undefined ? inputValues[checkId] : '';
+                    const hoursVal = inputValues[hoursId] !== undefined ? inputValues[hoursId] : 1;
+                    return `
+                    <div class="phase-card"
+                         data-recipe="${esc(recipe.id)}" data-phase="${idx}"
+                         data-dc="${esc(phase.check)}" data-max="${phase.max}">
+                        <div class="phase-header">
+                            <div>
+                                <div class="phase-name">${esc(phase.label)}</div>
+                                <div class="phase-tool">🛠 ${esc(phase.tool)}</div>
+                            </div>
+                            <div class="phase-dc">DC ${esc(phase.check)}</div>
+                        </div>
+                        <div class="progress-container" style="height:4px; margin-bottom:4px; background:#000;">
+                            <div class="progress-fill" style="width: ${percent}%; background: var(--accent-light);"></div>
+                        </div>
+                        <div style="text-align: right; font-size: 0.7rem; color: #888; font-family: monospace;">
+                            ${current} / ${phase.max}
+                        </div>
+
+                        <div class="phase-controls">
+                            <label class="ctl">
+                                <span class="ctl-label">Проверка</span>
+                                <input type="number" id="${checkId}" data-field="check"
+                                       value="${esc(checkVal)}" placeholder="d20"
+                                       aria-label="Результат проверки">
+                            </label>
+                            <label class="ctl">
+                                <span class="ctl-label">Часы</span>
+                                <input type="number" id="${hoursId}" data-field="hours"
+                                       value="${esc(hoursVal)}" min="1"
+                                       aria-label="Отработано часов">
+                            </label>
+                            <button class="btn-add" type="button" data-craft>Записать</button>
+                        </div>
+
+                        <div class="phase-preview">
+                            <span data-preview></span>
+                            <button class="btn-manual" type="button" data-manual>правка</button>
+                        </div>
+                    </div>
+                    `;
+                }).join('')}
+
+                <div class="recipe-footer">
+                    <button class="btn-reset-recipe" type="button" data-reset="${esc(recipe.id)}">
+                        🗑 Сбросить чертеж
+                    </button>
+                </div>
+            </div>
+        </details>
+        `;
+    }
+
+    function render() {
+        if (typeof initialRecipes === 'undefined') {
+            list.innerHTML = "<p class='search-empty'>Ошибка: schemes.js не найден.</p>";
+            return;
+        }
+
+        rerender(list, () => {
+            const categories = Object.keys(initialRecipes).sort((a, b) => a.localeCompare(b));
+
+            list.innerHTML = categories.map(category => {
+                // Копия перед сортировкой: исходные данные не мутируем.
+                const items = [...initialRecipes[category]].sort((a, b) => a.name.localeCompare(b.name));
+                return `
+                <div class="group">
+                    <div class="section-header">${esc(category)}</div>
+                    ${items.map(renderRecipe).join('')}
+                </div>`;
+            }).join('');
+        });
+
+        refreshAllPreviews();
+        applyFilter();
+    }
+
+    /* Прогресс этапа = (результат проверки − сложность) × часы.
+       Провал (проверка не превысила СЛ) прогресса не даёт. */
+    function readPhaseForm(card) {
+        const dc = Number(card.dataset.dc) || 0;
+        const checkRaw = card.querySelector('[data-field="check"]').value;
+        const hoursRaw = card.querySelector('[data-field="hours"]').value;
+
+        const check = parseInt(checkRaw, 10);
+        const hours = parseInt(hoursRaw, 10);
+        const hasCheck = Number.isFinite(check);
+        const validHours = Number.isFinite(hours) && hours > 0;
+        const margin = hasCheck ? check - dc : 0;
+        const gain = hasCheck && validHours && margin > 0 ? margin * hours : 0;
+
+        return { dc, check, hours, hasCheck, validHours, margin, gain };
+    }
+
+    function refreshPreview(card) {
+        const out = card.querySelector('[data-preview]');
+        const f = readPhaseForm(card);
+
+        card.classList.toggle('is-failed', f.hasCheck && f.margin <= 0);
+
+        if (!f.hasCheck) {
+            out.textContent = `Введите результат проверки — прибавится (проверка − ${f.dc}) × часы`;
+        } else if (f.margin <= 0) {
+            out.textContent = `${f.check} против СЛ ${f.dc} — провал, прогресса нет`;
+        } else if (!f.validHours) {
+            out.textContent = `${f.check} − ${f.dc} = ${f.margin} за час. Укажите часы`;
+        } else {
+            out.textContent = `(${f.check} − ${f.dc}) × ${f.hours} ч = +${f.gain}`;
+        }
+    }
+
+    function refreshAllPreviews() {
+        list.querySelectorAll('.phase-card').forEach(refreshPreview);
+    }
+
+    /* Один делегированный обработчик вместо onclick в разметке. */
+    list.addEventListener('click', e => {
+        const craftBtn = e.target.closest('[data-craft]');
+        if (craftBtn) {
+            const card = craftBtn.closest('.phase-card');
+            const f = readPhaseForm(card);
+
+            if (!f.hasCheck) { showNotice('Сначала введите результат проверки'); return; }
+            if (f.margin <= 0) { showNotice(`Провал: ${f.check} против СЛ ${f.dc}`); return; }
+            if (!f.validHours) { showNotice('Укажите количество часов'); return; }
+
+            // Бросок израсходован — очищаем поле проверки, часы оставляем.
+            delete inputValues[card.querySelector('[data-field="check"]').id];
+
+            updatePhaseProgress(card.dataset.recipe, Number(card.dataset.phase),
+                                f.gain, Number(card.dataset.max));
+            return;
+        }
+
+        const manualBtn = e.target.closest('[data-manual]');
+        if (manualBtn) {
+            const card = manualBtn.closest('.phase-card');
+            const recipeId = card.dataset.recipe;
+            const phaseIdx = Number(card.dataset.phase);
+            const max = Number(card.dataset.max);
+            const recipe = findRecipe(recipeId);
+            const phase = recipe && recipe.phases[phaseIdx];
+
+            const points = raw => Math.abs(parseInt(raw, 10)) || 0;
+            Modal.prompt({
+                title: 'Правка вручную',
+                text: phase ? `${phase.label}: ${progressOf(recipe)[phaseIdx]} / ${max}` : '',
+                value: '',
+                actions: [
+                    {
+                        label: 'Прибавить', className: 'btn-confirm',
+                        onClick: v => updatePhaseProgress(recipeId, phaseIdx, points(v), max)
+                    },
+                    {
+                        label: 'Снять', className: 'btn-cancel',
+                        onClick: v => updatePhaseProgress(recipeId, phaseIdx, -points(v), max)
+                    }
+                ]
+            });
+            return;
+        }
+
+        const resetBtn = e.target.closest('[data-reset]');
+        if (resetBtn) {
+            const id = resetBtn.dataset.reset;
+            const recipe = findRecipe(id);
+            Modal.confirm({
+                title: 'Сбросить чертёж?',
+                text: `Весь прогресс работы над «${recipe ? recipe.name : id}» будет безвозвратно удалён.`,
+                confirmText: 'Сбросить',
+                onConfirm: () => {
+                    delete progressData[id];
+                    Store.set(STORAGE_KEY, progressData);
+                    render();
+                    showNotice('Прогресс чертежа сброшен');
+                }
+            });
+        }
+    });
+
+    /* Запоминаем введённое число, чтобы перерисовка его не съедала,
+       и сразу пересчитываем подсказку с формулой. */
+    list.addEventListener('input', e => {
+        if (!e.target.matches('input[type="number"]')) return;
+        inputValues[e.target.id] = e.target.value;
+
+        const card = e.target.closest('.phase-card');
+        if (card) refreshPreview(card);
+    });
+
+    render();
+    applyFilter = initSearch(document.getElementById('search'), document.querySelector('main'));
+</script>
+
+</body>
+</html>

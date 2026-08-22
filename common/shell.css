@@ -1,0 +1,208 @@
+/* shell.css — только оболочка (main.html): навигация, хиты, iframe-вкладки.
+   Подключается поверх common.css и использует те же токены темы. */
+
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100vh;   /* фолбек для старых браузеров */
+  height: 100dvh;  /* динамическая высота на мобильных */
+  background: var(--page-bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  border-bottom: 2px solid var(--accent);
+  box-shadow: var(--glow);
+  z-index: 10;
+  position: relative;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.tab-btn {
+  flex: 1;
+  min-width: 0;
+  padding: 15px 5px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: 0.3s;
+  opacity: 0.6;
+  border-bottom: 3px solid transparent;
+  outline: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: var(--title-shadow);
+}
+
+.tab-btn.active {
+  opacity: 1;
+  color: var(--accent-light);
+  background: var(--accent-soft);
+  border-bottom-color: var(--accent);
+}
+
+.tab-btn:focus-visible { outline: 2px solid var(--accent-light); outline-offset: -3px; }
+
+.tab-label { font-size: 0.8rem; text-transform: uppercase; }
+
+.hp-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-left: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.hp-display-wrapper {
+  display: flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-weight: bold;
+  user-select: none;
+  min-width: 55px;
+  justify-content: center;
+}
+
+/* Число — основной орган управления хитами, поэтому у него есть подсветка:
+   иначе неочевидно, что по нему нужно нажимать. */
+#hp-current {
+  color: var(--hp-red);
+  transition: transform 0.15s, color 0.3s, background 0.2s;
+  display: inline-block;
+  background: none;
+  border: none;
+  border-radius: var(--radius);
+  padding: 2px 6px;
+  font: inherit;
+  cursor: pointer;
+}
+
+#hp-current:hover { background: var(--accent-soft); }
+#hp-current:focus-visible { outline: 2px solid var(--accent-light); outline-offset: 1px; }
+
+.hp-divider { color: var(--muted); margin: 0 2px; }
+
+#hp-max {
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-weight: bold;
+  padding: 0;
+}
+
+#hp-max:hover { color: var(--accent-light); }
+
+.hp-btn {
+  background: var(--btn-bg);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-family: inherit;
+  transition: 0.2s;
+  padding: 0;
+  outline: none;
+  flex-shrink: 0;
+}
+
+.hp-btn:active { background: var(--accent); transform: translateY(1px); }
+
+.heal-btn { color: var(--hp-green); margin-left: 2px; }
+
+/* Запас временных хитов: жетон слева от полосы ОЗ — видно, что урон
+   проходит сначала через него. Скрыт, когда пуст. */
+.hp-temp {
+  font-family: var(--font-mono);
+  font-weight: bold;
+  font-size: 0.8rem;
+  color: var(--gold);
+  background: var(--accent-soft);
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: 0.2s;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+.hp-temp:active { transform: translateY(1px); }
+
+.data-btn {
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 1rem;
+  padding: 12px 10px;
+  cursor: pointer;
+  transition: 0.2s;
+  flex-shrink: 0;
+}
+
+.data-btn:hover { color: var(--accent-light); }
+
+.content-container {
+  flex: 1;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: none;
+  vertical-align: bottom;
+}
+
+iframe.active { display: block; }
+
+#backup-text { min-height: 140px; }
+
+.file-label {
+  display: inline-block;
+  padding: 8px 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--accent);
+  color: var(--accent-light);
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+@media (max-width: 480px) {
+  .tab-btn { font-size: 0.9rem; padding: 12px 2px; }
+  .tab-label { display: none; }
+  .hp-container { padding: 0 5px; gap: 3px; }
+  .hp-btn { width: 22px; height: 22px; font-size: 0.75rem; }
+  .hp-display-wrapper { min-width: 45px; font-size: 0.9rem; }
+  .hp-temp { font-size: 0.7rem; padding: 1px 6px; margin-right: 2px; }
+  .data-btn { padding: 10px 6px; font-size: 0.85rem; }
+}

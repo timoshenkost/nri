@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>Книга заклинаний</title>
+
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="../common/common.css">
+<link rel="stylesheet" href="../common/spellbook.css">
+
+<script src="character.js"></script>
+<script src="../common/common.js"></script>
+<script src="spells.js"></script>
+<script src="../common/spellbook.js"></script>
+</head>
+<body>
+
+<header>
+  <h1>⚙️ Заклинания</h1>
+</header>
+
+<section class="resources-wrapper">
+  <div id="slots-grid" class="resource-row"></div>
+
+  <div id="features-block" class="resource-group" hidden>
+    <div class="resource-group-label">Способности</div>
+    <div id="features-grid" class="resource-row"></div>
+  </div>
+
+  <button class="btn-base btn-quiet" id="rest-btn" type="button">⏳ Длительный отдых</button>
+</section>
+
+<main>
+  <input id="search" class="search-input" type="search"
+         placeholder="Поиск по названию или описанию…"
+         aria-label="Поиск по заклинаниям">
+
+  <div class="section-header">Подготовленные</div>
+  <div id="prepared-list"></div>
+
+  <div class="section-header">Книга заклинаний</div>
+  <div id="available-list"></div>
+
+  <p class="search-empty" hidden>Ничего не найдено.</p>
+</main>
+
+<script>Spellbook.init();</script>
+
+</body>
+</html>

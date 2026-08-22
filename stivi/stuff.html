@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#1a1a1a">
+    <title>Снаряжение искателя приключений</title>
+
+    <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet" href="../common/common.css">
+
+    <script src="character.js"></script>
+    <script src="../common/common.js"></script>
+    <script src="stuff.js"></script>
+
+    <style>
+        .counter-section {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .counter-display {
+            font-size: 0.9rem;
+            color: var(--accent-light);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .counter-bar { display: flex; gap: 5px; }
+
+        .dot {
+            width: 12px; height: 12px; border-radius: 50%;
+            border: 1px solid var(--accent);
+            background: transparent; transition: all 0.3s ease;
+        }
+        .dot.active { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+
+        /* Список созданного за день: клик по метке отменяет создание */
+        .made-list {
+            display: flex; flex-wrap: wrap; gap: 6px;
+            justify-content: center; max-width: 600px;
+        }
+        .made-chip {
+            background: rgba(184, 115, 51, 0.12);
+            border: 1px solid #3d3d3d;
+            color: var(--text);
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .made-chip:hover { border-color: var(--danger-light); color: var(--danger-light); }
+        .made-chip::after { content: " ✕"; opacity: 0.5; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🎒 Снаряжение</h1>
+</header>
+
+<section class="counter-section">
+    <div class="counter-display">Создано сегодня: <span id="count-val">0</span> / 4</div>
+    <div class="counter-bar" id="counter-dots">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+    <div class="made-list" id="made-list"></div>
+    <button class="btn-base btn-quiet is-danger" id="reset-btn" type="button">Сбросить прогресс</button>
+</section>
+
+<main>
+    <input id="search" class="search-input" type="search"
+           placeholder="Поиск по названию или описанию…"
+           aria-label="Поиск по снаряжению">
+
+    <div id="app"></div>
+    <p class="search-empty" hidden>Ничего не найдено.</p>
+</main>
+
+<script>
+const STORAGE_KEY = 'daily_creation_state';
+const MAX_ITEMS = 4;
+
+function today() { return new Date().toDateString(); }
+
+/* Счётчик обнуляется сам при смене суток — проверяем дату не только при
+   загрузке, но и перед каждым изменением, чтобы вкладка, открытая через
+   полночь, не тянула вчерашний прогресс. */
+function loadState() {
+    const saved = Store.get(STORAGE_KEY, null);
+    if (!saved || saved.date !== today()) return { date: today(), items: [] };
+
+    if (Array.isArray(saved.items)) return { date: saved.date, items: saved.items };
+
+    // Старый формат хранил только число — восстанавливаем как безымянные записи.
+    const count = Math.max(0, Math.min(Number(saved.count) || 0, MAX_ITEMS));
+    return { date: saved.date, items: Array.from({ length: count }, () => 'Предмет') };
+}
+
+let state = loadState();
+
+function save() {
+    Store.set(STORAGE_KEY, state);
+}
+
+function refreshDay() {
+    if (state.date !== today()) {
+        state = { date: today(), items: [] };
+        save();
+    }
+}
+
+function updateUI() {
+    const count = state.items.length;
+    document.getElementById('count-val').textContent = count;
+    document.querySelectorAll('.dot').forEach((dot, i) => dot.classList.toggle('active', i < count));
+
+    const made = document.getElementById('made-list');
+    made.innerHTML = state.items.map((name, i) =>
+        `<button class="made-chip" type="button" data-undo="${i}" title="Отменить">${esc(name)}</button>`
+    ).join('');
+
+    const limitReached = count >= MAX_ITEMS;
+    document.querySelectorAll('.item-create-btn').forEach(btn => {
+        btn.disabled = limitReached;
+        btn.textContent = limitReached ? 'Лимит' : 'Создать';
+    });
+}
+
+function createItem(name) {
+    refreshDay();
+    if (state.items.length >= MAX_ITEMS) return;
+    state.items.push(name);
+    save();
+    updateUI();
+    showNotice(`Создано: ${name}`);
+}
+
+function undoItem(index) {
+    refreshDay();
+    const [removed] = state.items.splice(index, 1);
+    save();
+    updateUI();
+    if (removed) showNotice(`Отменено: ${removed}`);
+}
+
+function renderApp() {
+    const app = document.getElementById("app");
+
+    app.innerHTML = groupByTags(initialStuff, stuffCategories).map(([category, items]) => `
+        <div class="group">
+            <div class="section-header">${esc(category)}</div>
+            ${items.map(stuff => {
+                const haystack = (stuff.name + " " + stuff.description).toLowerCase();
+                return `
+                <details class="stuff"
+                         data-key="${esc(category + "|" + stuff.name)}"
+                         data-search="${esc(haystack)}">
+                    <summary>
+                        <span>${esc(stuff.name)}</span>
+                        <button class="btn-base btn-accent item-create-btn"
+                                type="button"
+                                data-create="${esc(stuff.name)}">Создать</button>
+                    </summary>
+                    <div class="content">
+                        <p style="white-space: pre-line; margin: 0;">${esc(stuff.description)}</p>
+                    </div>
+                </details>`;
+            }).join("")}
+        </div>
+    `).join("");
+}
+
+/* Делегирование вместо onclick в разметке: имя предмета больше не
+   подставляется внутрь JS-строки, поэтому апостроф в названии безопасен. */
+document.addEventListener('click', e => {
+    const createBtn = e.target.closest('.item-create-btn');
+    if (createBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        createItem(createBtn.dataset.create);
+        return;
+    }
+    const undoBtn = e.target.closest('.made-chip');
+    if (undoBtn) {
+        undoItem(Number(undoBtn.dataset.undo));
+    }
+});
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+    Modal.confirm({
+        title: 'Сбросить счётчик?',
+        text: 'Прогресс создания предметов за сегодня будет обнулён.',
+        confirmText: 'Сбросить',
+        onConfirm: () => {
+            state = { date: today(), items: [] };
+            save();
+            updateUI();
+            showNotice('Счётчик обнулён');
+        }
+    });
+});
+
+renderApp();
+updateUI();
+initSearch(document.getElementById("search"), document.querySelector("main"));
+</script>
+
+</body>
+</html>

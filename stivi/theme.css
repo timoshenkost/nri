@@ -1,0 +1,49 @@
+/* Тема Стиви — мастерская: медь, латунь, чертёжная сетка. */
+
+:root {
+  --page-bg:
+    linear-gradient(rgba(184, 115, 51, 0.03) 1px, transparent 1px) 0 0 / 20px 20px,
+    linear-gradient(90deg, rgba(184, 115, 51, 0.03) 1px, transparent 1px) 0 0 / 20px 20px,
+    #121212;
+
+  --surface: #1a1a1a;
+  --card: #242424;
+  --card-open: #2d2d2d;
+  --inset: rgba(0, 0, 0, 0.2);
+  --inset-solid: #000;
+
+  --accent: #b87333;
+  --accent-light: #e2a76f;
+  --accent-soft: rgba(184, 115, 51, 0.12);
+
+  --text: #d1d1d1;
+  --muted: #666;
+  --gold: #ffb300;
+
+  --danger: #8b2e2e;
+  --danger-light: #ff4d4d;
+  --hp-red: #ff4d4d;
+  --hp-green: #2ecc71;
+
+  --border: #333;
+  --border-strong: #555;
+  --btn-bg: #222;
+
+  --radius: 4px;
+  --font-body: 'Segoe UI', 'Roboto', sans-serif;
+  --font-mono: 'Courier New', monospace;
+
+  --glow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  --card-open-glow: none;
+  --header-border: 3px solid var(--accent);
+  --title-shadow: none;
+  --title-spacing: 3px;
+
+  --mark-color: var(--gold);
+  --mark-glow: none;
+
+  --badge-conc-bg: rgba(255, 179, 0, 0.12);
+  --badge-conc-fg: #ffb300;
+  --badge-ritual-bg: rgba(226, 167, 111, 0.12);
+  --badge-ritual-fg: #e2a76f;
+}

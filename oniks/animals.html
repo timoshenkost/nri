@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>Призывные существа</title>
+
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="../common/common.css">
+<link rel="stylesheet" href="creature.css">
+
+<script src="character.js"></script>
+<script src="../common/common.js"></script>
+<script src="animals.js"></script>
+<script src="render_creature.js"></script>
+</head>
+<body>
+
+<header>
+  <h1>🐾 Призывные существа</h1>
+</header>
+
+<main>
+  <input id="search" class="search-input" type="search"
+         placeholder="Поиск по имени, чувствам или действиям…"
+         aria-label="Поиск по существам">
+
+  <div id="app"></div>
+  <p class="search-empty" hidden>Ничего не найдено.</p>
+</main>
+
+<script>
+document.getElementById('app').innerHTML = `
+  <div class="group">
+    ${initialAnimals.map(creature => `
+      <details class="creature"
+               data-key="${esc(creature.name)}"
+               data-search="${esc(creatureHaystack(creature))}">
+        <summary>
+          <span>${esc(creature.name)}${creature.size ? ` <span class="size">${esc(creature.size)}</span>` : ''}</span>
+        </summary>
+        ${renderCreatureBody(creature)}
+      </details>
+    `).join('')}
+  </div>
+`;
+
+initSearch(document.getElementById('search'), document.querySelector('main'));
+</script>
+
+</body>
+</html>

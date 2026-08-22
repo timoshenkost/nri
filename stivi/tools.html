@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#1a1a1a">
+<title>Инструменты</title>
+
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="../common/common.css">
+
+<script src="character.js"></script>
+<script src="../common/common.js"></script>
+<script src="tools.js"></script>
+
+<style>
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 15px;
+  }
+
+  @media (max-width: 480px) {
+    .meta-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚒️ Инструменты</h1>
+</header>
+
+<main>
+  <input id="search" class="search-input" type="search"
+         placeholder="Поиск по названию, действию или отыгрышу…"
+         aria-label="Поиск по инструментам">
+
+  <div id="app"></div>
+  <p class="search-empty" hidden>Ничего не найдено.</p>
+</main>
+
+<script>
+const app = document.getElementById("app");
+
+function renderTool(tool, category) {
+  const haystack = [
+    tool.name,
+    tool.stat,
+    tool.roleplay,
+    ...tool.actions.map(a => a[0])
+  ].join(" ").toLowerCase();
+
+  return `
+    <details class="tool" data-key="${esc(category + "|" + tool.name)}" data-search="${esc(haystack)}">
+      <summary>${esc(tool.name)}</summary>
+      <div class="content">
+        <div class="meta-grid">
+          ${tool.stat ? `<div><span class="label">Характеристика</span> ${esc(tool.stat)}</div>` : ""}
+          ${tool.roleplay ? `<div><span class="label">Отыгрыш</span> ${esc(tool.roleplay)}</div>` : ""}
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Действие</th>
+              <th style="text-align: right;">Сложность</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tool.actions.map(a => `
+              <tr>
+                <td>${esc(a[0])}</td>
+                <td class="dc-value">${esc(a[1])}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    </details>
+  `;
+}
+
+app.innerHTML = groupByTags(initialTools, toolCategories).map(([category, tools]) => `
+  <div class="group">
+    <div class="section-header">${esc(category)}</div>
+    ${tools.map(tool => renderTool(tool, category)).join("")}
+  </div>
+`).join("");
+
+initSearch(document.getElementById("search"), document.querySelector("main"));
+</script>
+
+</body>
+</html>

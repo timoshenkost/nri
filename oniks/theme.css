@@ -1,0 +1,46 @@
+/* Тема Оникса — фолиант: фиолет, лунное свечение, засечки. */
+
+:root {
+  --page-bg: radial-gradient(circle at 20% 20%, #1a0f2b, #0f061a 80%);
+
+  --surface: #140a24;
+  --card: #1a0f2b;
+  --card-open: #24153a;
+  --inset: rgba(0, 0, 0, 0.18);
+  --inset-solid: rgba(20, 10, 36, 0.9);
+
+  --accent: #a855f7;
+  --accent-light: #d8b4fe;
+  --accent-soft: rgba(168, 85, 247, 0.12);
+
+  --text: #e9d5ff;
+  --muted: #8b7aa8;
+  --gold: #c084fc;
+
+  --danger: #7f1d3f;
+  --danger-light: #f43f5e;
+  --hp-red: #ff4d4d;
+  --hp-green: #2ecc71;
+
+  --border: rgba(168, 85, 247, 0.25);
+  --border-strong: #5b21b6;
+  --btn-bg: #1f1235;
+
+  --radius: 8px;
+  --font-body: 'Georgia', serif;
+  --font-mono: 'Courier New', monospace;
+
+  --glow: 0 0 20px rgba(168, 85, 247, 0.4);
+  --card-open-glow: 0 0 20px rgba(168, 85, 247, 0.25);
+  --header-border: 2px solid var(--accent);
+  --title-shadow: 0 0 10px rgba(168, 85, 247, 0.6);
+  --title-spacing: 4px;
+
+  --mark-color: #38bdf8;
+  --mark-glow: 0 0 8px rgba(56, 189, 248, 0.6);
+
+  --badge-conc-bg: rgba(244, 63, 94, 0.15);
+  --badge-conc-fg: #f43f5e;
+  --badge-ritual-bg: rgba(34, 197, 94, 0.15);
+  --badge-ritual-fg: #22c55e;
+}

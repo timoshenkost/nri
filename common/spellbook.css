@@ -1,0 +1,69 @@
+/* spellbook.css — оформление книги заклинаний. Общее для всех листов. */
+
+.resources-wrapper {
+  background: var(--inset);
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.spell-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.spell-name { word-wrap: break-word; }
+
+.spell-mark {
+  color: var(--mark-color);
+  text-shadow: var(--mark-glow);
+  font-size: 1.1rem;
+}
+
+.action-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.cast-btn { padding: 5px 12px; font-size: 0.7rem; }
+.cast-btn.is-free { border-color: var(--gold); color: var(--gold); }
+
+.move-btn {
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  background: var(--btn-bg);
+  color: var(--muted);
+}
+
+.move-btn:hover { border-color: var(--accent); color: var(--accent-light); }
+
+.spell-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.spell-roleplay {
+  color: var(--gold);
+  font-style: italic;
+  white-space: pre-line;
+  font-size: 0.85rem;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  margin-top: 10px;
+}
+
+.level-header { color: var(--accent-light); opacity: 0.65; }
+
+@media (max-width: 480px) {
+  .spell-meta { grid-template-columns: 1fr; }
+}

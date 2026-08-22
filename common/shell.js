@@ -1,0 +1,305 @@
+/* shell.js — оболочка листа: навигация по вкладкам, хиты, экспорт.
+   Вкладки берутся ИСКЛЮЧИТЕЛЬНО из CHARACTER.tabs, поэтому страницы одного
+   персонажа не могут появиться у другого: ни кнопки, ни iframe, ни загрузки
+   файла. Подключается после character.js и common.js. */
+
+(function buildShell() {
+  const DEFAULT_HP = Number(CHARACTER.maxHP) || 1;
+
+  /* --- Разметка --------------------------------------------------- */
+
+  const nav = document.createElement('nav');
+  nav.innerHTML = `
+    ${CHARACTER.tabs.map(tab => `
+      <button class="tab-btn" type="button" data-tab="${esc(tab.id)}"
+              title="${esc(tab.title)}" aria-label="${esc(tab.title)}">
+        ${esc(tab.icon)}${tab.label ? ` <span class="tab-label">${esc(tab.label)}</span>` : ''}
+      </button>
+    `).join('')}
+
+    <div class="hp-container">
+      <button class="hp-temp" id="hp-temp" type="button" hidden
+              title="Временные хиты — тратятся первыми"
+              aria-label="Временные хиты">0</button>
+      <div class="hp-display-wrapper">
+        <button id="hp-current" type="button" title="Ввести урон или лечение числом"
+                aria-label="Ввести урон или лечение числом">0</button>
+        <span class="hp-divider">/</span>
+        <button id="hp-max" type="button" title="Изменить максимум ОЗ"
+                aria-label="Изменить максимум хитов">0</button>
+      </div>
+      <button class="hp-btn heal-btn" id="hp-full" type="button"
+              title="Восстановить всё" aria-label="Восстановить все хиты">❤</button>
+    </div>
+
+    <button class="data-btn" id="backup-btn" type="button"
+            title="Сохранение персонажа" aria-label="Экспорт и импорт данных">💾</button>
+  `;
+
+  const content = document.createElement('div');
+  content.className = 'content-container';
+  content.innerHTML = CHARACTER.tabs.map(tab => `
+    <iframe id="${esc(tab.id)}" data-src="${esc(tab.file)}" title="${esc(tab.title)}"></iframe>
+  `).join('');
+
+  const backup = document.createElement('div');
+  backup.id = 'backup-overlay';
+  backup.className = 'modal-overlay';
+  backup.innerHTML = `
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Сохранение персонажа">
+      <div class="modal-title">Сохранение · ${esc(CHARACTER.name)}</div>
+      <div class="modal-text">Скачайте файл или скопируйте текст — так данные переживут чистку браузера.</div>
+      <textarea id="backup-text" class="modal-input" spellcheck="false" aria-label="Данные сохранения"></textarea>
+      <div class="modal-buttons">
+        <button class="modal-btn btn-confirm" id="backup-download" type="button">Скачать</button>
+        <label class="file-label" for="backup-file">Открыть файл…</label>
+        <input type="file" id="backup-file" accept=".json,application/json" hidden>
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-btn btn-cancel" id="backup-restore" type="button">Загрузить из поля</button>
+        <button class="modal-btn btn-cancel" id="backup-close" type="button">Закрыть</button>
+      </div>
+    </div>
+  `;
+
+  document.body.append(nav, content, backup);
+
+  /* --- Хиты -------------------------------------------------------- */
+
+  function readNumber(key, fallback) {
+    const value = Number(Store.get(key, fallback));
+    return Number.isFinite(value) ? value : fallback;
+  }
+
+  let maxHP = Math.max(1, readNumber('my_max_hp', DEFAULT_HP));
+  let currentHP = Math.max(0, Math.min(readNumber('my_hp', maxHP), maxHP));
+  /* Временные хиты — отдельный запас: не ограничен максимумом, тратится
+     первым, не восстанавливается лечением и пропадает после отдыха. */
+  let tempHP = Math.max(0, readNumber('my_temp_hp', 0));
+
+  const hpCurrentEl = document.getElementById('hp-current');
+  const hpMaxEl = document.getElementById('hp-max');
+  const hpTempEl = document.getElementById('hp-temp');
+
+  function hpLabel() {
+    return tempHP > 0 ? `${currentHP} (+${tempHP}) / ${maxHP}` : `${currentHP} / ${maxHP}`;
+  }
+
+  function updateHPUI() {
+    hpCurrentEl.textContent = currentHP;
+    hpMaxEl.textContent = maxHP;
+    hpTempEl.textContent = tempHP;
+    hpTempEl.hidden = tempHP === 0;
+
+    const share = maxHP > 0 ? currentHP / maxHP : 0;
+    hpCurrentEl.style.color =
+      share >= 1 ? 'var(--hp-green)' :
+      share > 0.5 ? 'var(--text)' :
+      share > 0.25 ? 'var(--gold)' :
+      'var(--hp-red)';
+  }
+
+  function commitHP() {
+    Store.set('my_hp', currentHP);
+    Store.set('my_max_hp', maxHP);
+    Store.set('my_temp_hp', tempHP);
+    updateHPUI();
+    hpCurrentEl.style.transform = 'scale(1.3)';
+    setTimeout(() => { hpCurrentEl.style.transform = 'scale(1)'; }, 100);
+  }
+
+  /* Урон сначала съедает временные хиты. Уведомлений нет: результат виден
+     в самой шапке. */
+  function applyDamage(amount) {
+    const absorbed = Math.min(tempHP, amount);
+    tempHP -= absorbed;
+    currentHP = Math.max(0, currentHP - (amount - absorbed));
+    commitHP();
+  }
+
+  /* Лечение временные хиты не восстанавливает — так по правилам. */
+  function applyHeal(amount) {
+    currentHP = Math.min(currentHP + amount, maxHP);
+    commitHP();
+  }
+
+  function setTempHP(value, { keepHigher = false } = {}) {
+    const parsed = Math.max(0, parseInt(value, 10) || 0);
+
+    // Временные хиты не складываются: остаётся тот запас, что больше.
+    if (keepHigher && parsed <= tempHP) {
+      // Единственный случай, когда без подсказки непонятно: с виду ничего
+      // не произошло, хотя кнопку нажали.
+      if (parsed > 0) showNotice(`Прежний запас больше — оставлено ${tempHP}`);
+      return;
+    }
+
+    tempHP = parsed;
+    commitHP();
+  }
+
+  function restoreHP() {
+    currentHP = maxHP;
+    commitHP();
+  }
+
+  /* Отдых, в отличие от кнопки «восстановить всё», сбрасывает и запас. */
+  function longRestHP() {
+    currentHP = maxHP;
+    tempHP = 0;
+    commitHP();
+  }
+
+  function fromInput(raw) {
+    const amount = Math.abs(parseInt(raw, 10));
+    return Number.isFinite(amount) && amount > 0 ? amount : 0;
+  }
+
+  document.getElementById('hp-full').addEventListener('click', restoreHP);
+
+  hpCurrentEl.addEventListener('click', () => {
+    Modal.prompt({
+      title: 'Урон или лечение',
+      text: `Сейчас ${hpLabel()}`,
+      value: '',
+      actions: [
+        { label: 'Урон', className: 'btn-confirm', onClick: v => { const n = fromInput(v); if (n) applyDamage(n); } },
+        { label: 'Лечение', className: 'btn-cancel', onClick: v => { const n = fromInput(v); if (n) applyHeal(n); } },
+        { label: 'Временные', className: 'btn-cancel', onClick: v => { const n = fromInput(v); if (n) setTempHP(n, { keepHigher: true }); } }
+      ]
+    });
+  });
+
+  hpTempEl.addEventListener('click', () => {
+    Modal.prompt({
+      title: 'Временные хиты',
+      text: 'Точное значение запаса. 0 — снять.',
+      value: tempHP,
+      onConfirm: value => setTempHP(value)
+    });
+  });
+
+  hpMaxEl.addEventListener('click', () => {
+    Modal.prompt({
+      title: 'Максимальные ОЗ',
+      value: maxHP,
+      onConfirm: value => {
+        const parsed = parseInt(value, 10);
+        if (!Number.isFinite(parsed)) return;
+        maxHP = Math.max(1, parsed);
+        if (currentHP > maxHP) currentHP = maxHP;
+        commitHP();
+      }
+    });
+  });
+
+  /* Длительный отдых может запустить любая вкладка. Оболочка —
+     единственное место, которое видит их все, поэтому она восстанавливает
+     хиты и рассылает команду остальным: ячейки, заряды облика и прочие
+     ресурсы каждая вкладка возвращает себе сама.
+
+     Ответ идёт другим типом сообщения, иначе вкладка-инициатор получила бы
+     своё же событие обратно и запустила бы бесконечный круг. */
+  window.addEventListener('message', e => {
+    if (!e.data || e.data.type !== 'long-rest') return;
+
+    longRestHP();
+    content.querySelectorAll('iframe').forEach(frame => {
+      if (frame.contentWindow) {
+        frame.contentWindow.postMessage({ type: 'long-rest-apply' }, '*');
+      }
+    });
+  });
+
+  /* --- Вкладки ----------------------------------------------------- */
+
+  function openTab(tabId) {
+    const frame = document.getElementById(tabId);
+    if (!frame) return;
+
+    // src подставляется при первом открытии: незачем грузить все страницы сразу.
+    if (!frame.src && frame.dataset.src) frame.src = frame.dataset.src;
+
+    content.querySelectorAll('iframe').forEach(f => f.classList.toggle('active', f === frame));
+    nav.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+
+    Store.set('active_tab', tabId);
+  }
+
+  nav.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => openTab(btn.dataset.tab));
+  });
+
+  /* --- Экспорт / импорт -------------------------------------------- */
+
+  const backupText = document.getElementById('backup-text');
+
+  function closeBackup() { backup.classList.remove('is-open'); }
+
+  document.getElementById('backup-btn').addEventListener('click', () => {
+    backupText.value = Backup.collect();
+    backup.classList.add('is-open');
+  });
+
+  document.getElementById('backup-close').addEventListener('click', closeBackup);
+  backup.addEventListener('click', e => { if (e.target === backup) closeBackup(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && backup.classList.contains('is-open')) closeBackup();
+  });
+
+  document.getElementById('backup-download').addEventListener('click', () => {
+    if (Backup.download(backupText.value)) {
+      showNotice('Файл сохранён');
+    } else {
+      showNotice('Скачивание недоступно — скопируйте текст вручную');
+      backupText.select();
+    }
+  });
+
+  document.getElementById('backup-restore').addEventListener('click', () => {
+    Modal.confirm({
+      title: 'Заменить данные?',
+      text: `Текущий прогресс «${CHARACTER.name}» будет перезаписан содержимым поля.`,
+      confirmText: 'Заменить',
+      onConfirm: () => {
+        const result = Backup.restore(backupText.value);
+        if (!result.ok) { showNotice(`Не удалось загрузить: ${result.error}`); return; }
+        closeBackup();
+        showNotice('Данные загружены, обновляю…');
+        setTimeout(() => location.reload(), 700);
+      }
+    });
+  });
+
+  document.getElementById('backup-file').addEventListener('change', e => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      backupText.value = String(reader.result);
+      showNotice('Файл прочитан — нажмите «Загрузить из поля»');
+    };
+    reader.onerror = () => showNotice('Не удалось прочитать файл');
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+
+  /* --- Старт ------------------------------------------------------- */
+
+  const moved = migrateLegacyKeys();
+  if (moved) {
+    // Перенос мог подхватить данные другого листа, если раньше оба жили на
+    // одном origin с общими ключами — просим проверить.
+    setTimeout(() => showNotice('Перенесены данные старой версии — проверьте хиты'), 400);
+  }
+
+  // Значения могли приехать миграцией уже после первого чтения.
+  maxHP = Math.max(1, readNumber('my_max_hp', DEFAULT_HP));
+  currentHP = Math.max(0, Math.min(readNumber('my_hp', maxHP), maxHP));
+  tempHP = Math.max(0, readNumber('my_temp_hp', 0));
+
+  updateHPUI();
+
+  const savedTab = Store.get('active_tab', CHARACTER.tabs[0].id);
+  openTab(document.getElementById(savedTab) ? savedTab : CHARACTER.tabs[0].id);
+})();

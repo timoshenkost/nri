@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>Дикие облики</title>
+
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="../common/common.css">
+<link rel="stylesheet" href="../common/spellbook.css">
+<link rel="stylesheet" href="creature.css">
+
+<script src="character.js"></script>
+<script src="../common/common.js"></script>
+<script src="forms.js"></script>
+<script src="render_creature.js"></script>
+
+<style>
+  .summary-name { flex: 1; min-width: 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🐻 Дикие облики</h1>
+</header>
+
+<section class="resources-wrapper">
+  <div id="slots-grid" class="resource-row"></div>
+  <button class="btn-base btn-quiet" id="rest-btn" type="button">⏳ Длительный отдых</button>
+</section>
+
+<main>
+  <input id="search" class="search-input" type="search"
+         placeholder="Поиск облика…"
+         aria-label="Поиск по обликам">
+
+  <div class="section-header">Подготовленные облики</div>
+  <div id="prepared-list"></div>
+
+  <div class="section-header">Доступные формы</div>
+  <div id="available-list"></div>
+
+  <p class="search-empty" hidden>Ничего не найдено.</p>
+</main>
+
+<script>
+const DRUID_STATS = { int: 8, wis: 18, cha: 12 };
+
+/* Заряды дикого облика — обычный ресурс до отдыха, как ячейки. */
+const shapeDefs = { wildshape: { name: 'Дикий облик', short: 'Облики', max: 3 } };
+let shapeSlots = Resources.merge(shapeDefs, Store.get('wild_shape_slots', null));
+
+const forms = initialForms.map(f => ({ ...f, prepared: false }));
+const preparedNames = Store.get('prepared_forms_data', []);
+if (Array.isArray(preparedNames)) {
+  forms.forEach(f => { if (preparedNames.includes(f.name)) f.prepared = true; });
+}
+
+const preparedList = document.getElementById('prepared-list');
+const availableList = document.getElementById('available-list');
+let applyFilter = () => {};
+
+function save() {
+  Store.set('wild_shape_slots', shapeSlots);
+  Store.set('prepared_forms_data', forms.filter(f => f.prepared).map(f => f.name));
+}
+
+function toModStr(val) { return val >= 0 ? `+${val}` : `${val}`; }
+
+/* Облик получает ментальные характеристики друида, КД 13 + Мудрость и
+   бонус к спасброску Телосложения. */
+function applyDruidBuffs(original) {
+  const c = JSON.parse(JSON.stringify(original));
+
+  ['int', 'wis', 'cha'].forEach(statKey => {
+    if (c.stats[statKey].value < DRUID_STATS[statKey]) {
+      const oldMod = parseInt(c.stats[statKey].mod, 10);
+      const newMod = Math.floor((DRUID_STATS[statKey] - 10) / 2);
+      const modDiff = newMod - oldMod;
+
+      c.stats[statKey].value = DRUID_STATS[statKey];
+      c.stats[statKey].mod = toModStr(newMod);
+
+      if (c.stats[statKey].save) {
+        c.stats[statKey].save = toModStr(parseInt(c.stats[statKey].save, 10) + modDiff);
+      }
+    }
+  });
+
+  const currentWisMod = parseInt(c.stats.wis.mod, 10);
+  const druidAC = 13 + currentWisMod;
+  if (parseInt(c.ac, 10) < druidAC) {
+    c.ac = String(c.is_armor === true ? druidAC + 1 : druidAC);
+  }
+
+  const druidWisBonus = 4;
+  const baseConMod = parseInt(c.stats.con.mod, 10);
+  const currentConSave = c.stats.con.save ? parseInt(c.stats.con.save, 10) : baseConMod;
+  c.stats.con.save = toModStr(currentConSave + druidWisBonus);
+
+  return c;
+}
+
+function formCardHTML(form, index) {
+  const buffed = applyDruidBuffs(form);
+  const body = renderCreatureBody(buffed);
+  const haystack = creatureHaystack(buffed);
+
+  return `
+    <details class="creature" data-key="${esc(form.name)}" data-search="${esc(haystack)}">
+      <summary>
+        <span class="summary-name">${esc(form.name)}${form.size ? ` <span class="size">${esc(form.size)}</span>` : ''}</span>
+        <button class="btn-base move-btn" type="button" data-toggle="${index}"
+                aria-label="${form.prepared ? 'Убрать из подготовленных' : 'Подготовить'}">
+          ${form.prepared ? '−' : '+'}
+        </button>
+      </summary>
+      ${body}
+    </details>
+  `;
+}
+
+function render() {
+  save();
+  rerender([preparedList, availableList], () => {
+    const indexed = forms.map((form, index) => ({ form, index }));
+    const draw = (container, list) => {
+      container.innerHTML = list.length
+        ? `<div class="group">${list.map(x => formCardHTML(x.form, x.index)).join('')}</div>`
+        : '';
+    };
+    draw(preparedList, indexed.filter(x => x.form.prepared));
+    draw(availableList, indexed.filter(x => !x.form.prepared));
+    document.getElementById('slots-grid').innerHTML =
+      Resources.rowHTML(shapeSlots, shapeDefs, 'data-shape');
+  });
+  applyFilter();
+}
+
+function applyLongRest() {
+  Resources.restoreAll(shapeSlots, shapeDefs);
+  render();
+}
+
+document.addEventListener('click', e => {
+  const shapeBtn = e.target.closest('[data-shape]');
+  if (shapeBtn) {
+    const delta = Number(shapeBtn.dataset.delta);
+    if (Resources.change(shapeSlots, shapeBtn.dataset.shape, delta)) {
+      if (delta < 0) showNotice(`Заряды облика: осталось ${shapeSlots.wildshape.current}`);
+      render();
+    } else if (delta < 0) {
+      showNotice('Заряды дикого облика кончились');
+    }
+    return;
+  }
+
+  const toggleBtn = e.target.closest('[data-toggle]');
+  if (toggleBtn) {
+    e.preventDefault();
+    e.stopPropagation();
+    const form = forms[Number(toggleBtn.dataset.toggle)];
+    if (form) { form.prepared = !form.prepared; render(); }
+  }
+});
+
+document.getElementById('rest-btn').addEventListener('click', () => {
+  Modal.confirm({
+    title: 'Длительный отдых?',
+    text: 'Заряды облика, ячейки и хиты восстановятся. Временные хиты пропадут.',
+    confirmText: 'Отдохнуть',
+    onConfirm: () => {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'long-rest' }, '*');
+      } else {
+        applyLongRest();
+      }
+      showNotice('Силы восстановлены!');
+    }
+  });
+});
+
+window.addEventListener('message', e => {
+  if (e.data && e.data.type === 'long-rest-apply') applyLongRest();
+});
+
+render();
+applyFilter = initSearch(document.getElementById('search'), document.querySelector('main'));
+</script>
+
+</body>
+</html>
