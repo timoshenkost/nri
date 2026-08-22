@@ -25,17 +25,33 @@ const Spellbook = (() => {
      ключ связи, поэтому опечатку важно заметить сразу, а не гадать, куда
      пропало заклинание. */
   const libraryByName = new Map(spellLibrary.map(s => [s.name, s]));
-  const missing = [];
+  const personal = new Map(characterSpells.map(s => [s.name, s]));
 
-  const spells = characterSpells.map(sel => {
-    const lib = libraryByName.get(sel.name);
-    if (!lib) { missing.push(sel.name); return null; }
-    return { ...lib, ...sel };
-  }).filter(Boolean);
-
+  const missing = [...personal.keys()].filter(name => !libraryByName.has(name));
   if (missing.length) {
     console.warn('Нет в библиотеке заклинаний:', missing);
   }
+
+  /* Книга собирается из двух источников:
+       1) весь список класса персонажа — подтягивается сам, ничего
+          перечислять не надо;
+       2) то, что записано лично: подготовленность, отыгрыш, бесплатные
+          касты, а также заклинания не из класса — от черт или вида.
+     Личная запись всегда сильнее, поэтому prepared и roleplay побеждают
+     значения из библиотеки. */
+  const ownClasses = CHARACTER.spellClasses || [];
+  const fromClass = spellLibrary
+    .filter(s => (s.classes || []).some(c => ownClasses.includes(c)))
+    .map(s => s.name);
+
+  const names = new Set(
+    [...fromClass, ...personal.keys()].filter(name => libraryByName.has(name))
+  );
+
+  const spells = [...names].map(name => ({
+    ...libraryByName.get(name),
+    ...(personal.get(name) || {})
+  }));
 
   let slots = Resources.merge(slotDefs, null);
   let features = Resources.merge(featureDefs, null);
