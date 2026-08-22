@@ -156,10 +156,12 @@ const Spellbook = (() => {
     ].join('');
 
     const classes = (spell.classes || []).join(', ');
+    const subclasses = (spell.subclasses || []).join(', ');
 
     const haystack = [
       spell.name, spell.school, spell.description, spell.roleplay,
-      spell.components, spell.duration, spell.range, spell.time, classes
+      spell.components, spell.duration, spell.range, spell.time,
+      classes, subclasses
     ].join(' ').toLowerCase();
 
     return `
@@ -176,6 +178,7 @@ const Spellbook = (() => {
             <div><span class="label">Компоненты</span>${esc(spell.components)}</div>
             <div><span class="label">Длительность</span>${esc(spell.duration)}</div>
             ${classes ? `<div class="spell-classes"><span class="label">Классы</span>${esc(classes)}</div>` : ''}
+            ${subclasses ? `<div class="spell-classes"><span class="label">Через подкласс</span>${esc(subclasses)}</div>` : ''}
           </div>
           <p style="white-space: pre-line;">${esc(spell.description)}</p>
           ${spell.roleplay ? `<p class="spell-roleplay">${esc(spell.roleplay)}</p>` : ''}
