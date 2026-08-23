@@ -40,8 +40,15 @@ const Spellbook = (() => {
      Личная запись всегда сильнее, поэтому prepared и roleplay побеждают
      значения из библиотеки. */
   const ownClasses = CHARACTER.spellClasses || [];
+
+  /* fixedCantrips — заговоры выбраны при создании персонажа и не меняются.
+     Тогда список класса их не подтягивает: иначе в общем списке висели бы
+     заговоры, которые персонаж не знает и выучить не может. */
+  const fixedCantrips = !!CHARACTER.fixedCantrips;
+
   const fromClass = spellLibrary
     .filter(s => (s.classes || []).some(c => ownClasses.includes(c)))
+    .filter(s => !(fixedCantrips && s.levelNum === 0))
     .map(s => s.name);
 
   const names = new Set(
@@ -148,6 +155,7 @@ const Spellbook = (() => {
   function togglePrepared(index) {
     const spell = spells[index];
     if (!spell || spell.locked) return;
+    if (fixedCantrips && spell.levelNum === 0) return;
     spell.prepared = !spell.prepared;
     render();
   }
@@ -166,7 +174,10 @@ const Spellbook = (() => {
          </button>`
       : '';
 
-    const moveBtn = spell.locked
+    // Заперто явно — или это заговор у персонажа с фиксированным набором.
+    const unchangeable = spell.locked || (fixedCantrips && spell.levelNum === 0);
+
+    const moveBtn = unchangeable
       ? ''
       : `<button class="btn-base move-btn" type="button" data-toggle="${index}"
                  aria-label="${spell.prepared ? 'Убрать из подготовленных' : 'Подготовить'}">
