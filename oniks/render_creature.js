@@ -44,6 +44,7 @@ function renderCreatureBody(creature) {
 
       <div class="info">
         ${line('Размер', creature.size)}
+        ${line('Тип', creature.type)}
         ${line('Чувства', creature.senses)}
         ${line('Навыки', creature.skills)}
         ${line('Сопротивления', creature.resistances)}
@@ -63,7 +64,7 @@ function renderCreatureBody(creature) {
 function creatureHaystack(creature) {
   const names = list => (list || []).map(i => `${i.name} ${i.desc}`).join(' ');
   return [
-    creature.name, creature.size, creature.senses, creature.skills,
+    creature.name, creature.size, creature.type, creature.senses, creature.skills,
     creature.resistances, creature.immunities, creature.languages,
     names(creature.traits), names(creature.actions), names(creature.bonusActions)
   ].filter(Boolean).join(' ').toLowerCase();
