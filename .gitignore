@@ -2,3 +2,13 @@
 .vscode/
 __pycache__/
 *.pyc
+
+# временные отчёты вспомогательных скриптов
+batch.json
+sim.txt
+sim2.txt
+todo.txt
+levels.txt
+cantrips.txt
+merge_report.txt
+cmp_report.txt
