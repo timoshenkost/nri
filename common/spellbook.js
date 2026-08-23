@@ -173,7 +173,8 @@ const Spellbook = (() => {
            ${spell.prepared ? '−' : '+'}
          </button>`;
 
-    /* isMoon — исторический флаг Круга Луны из книги друида; поддержан
+    /* Значки слева от названия — то, что важно заметить с одного взгляда.
+       isMoon — исторический флаг Круга Луны из книги друида; поддержан
        наравне с общим mark, чтобы не переписывать данные. */
     const markIcon = spell.mark || (spell.isMoon ? '🌙' : '');
     const markHint = spell.markTitle || (spell.isMoon ? 'Круг Луны' : '');
@@ -181,10 +182,17 @@ const Spellbook = (() => {
       ? `<span class="spell-mark" title="${esc(markHint)}">${esc(markIcon)}</span>`
       : '';
 
+    /* Бесплатный каст: полная звезда — есть, пустая — потрачен до отдыха. */
+    const freeMark = spell.isFree
+      ? `<span class="spell-free ${spell.freeUsed ? 'is-used' : ''}"
+               title="${spell.freeUsed ? 'Бесплатный каст потрачен' : 'Бесплатный каст до длительного отдыха'}"
+         >${spell.freeUsed ? '☆' : '★'}</span>`
+      : '';
+
+    /* Концентрация и ритуал — справочная мелочь, поэтому приглушены. */
     const badges = [
       spell.isConcentration ? '<span class="badge badge-concentration" title="Требуется концентрация">К</span>' : '',
-      spell.isRitual ? '<span class="badge badge-ritual" title="Можно как ритуал">Р</span>' : '',
-      spell.isFree ? `<span class="badge badge-free" title="Один бесплатный каст до отдыха">${spell.freeUsed ? '○' : '●'}</span>` : ''
+      spell.isRitual ? '<span class="badge badge-ritual" title="Можно наложить как ритуал">Р</span>' : ''
     ].join('');
 
     /* Классы в карточке не показываем — за столом они не нужны, а место
@@ -200,7 +208,7 @@ const Spellbook = (() => {
     return `
       <details data-key="${esc(spell.name)}" data-search="${esc(haystack)}">
         <summary>
-          <span class="spell-title">${mark}<span class="spell-name">${esc(spell.name)}</span>${badges}</span>
+          <span class="spell-title">${freeMark}${mark}<span class="spell-name">${esc(spell.name)}</span>${badges}</span>
           <span class="action-group">${castBtn}${moveBtn}</span>
         </summary>
         <div class="block">

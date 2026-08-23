@@ -42,8 +42,7 @@
   --mark-color: var(--gold);
   --mark-glow: none;
 
-  --badge-conc-bg: rgba(255, 179, 0, 0.12);
-  --badge-conc-fg: #ffb300;
-  --badge-ritual-bg: rgba(226, 167, 111, 0.12);
-  --badge-ritual-fg: #e2a76f;
+  /* Не золотой: золотой занят звездой бесплатного каста. */
+  --badge-conc-fg: #d2703f;
+  --badge-ritual-fg: #8f9aa6;
 }

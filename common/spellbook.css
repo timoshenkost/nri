@@ -24,6 +24,24 @@
   color: var(--mark-color);
   text-shadow: var(--mark-glow);
   font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* Бесплатный каст — звезда слева от названия, как метка круга у друида.
+   Потраченная гаснет до контура, но место сохраняет: видно, что каст
+   был и вернётся после отдыха. */
+.spell-free {
+  color: var(--gold);
+  font-size: 1.05rem;
+  line-height: 1;
+  text-shadow: 0 0 8px var(--gold);
+  flex-shrink: 0;
+}
+
+.spell-free.is-used {
+  color: var(--muted);
+  text-shadow: none;
+  opacity: 0.7;
 }
 
 .action-group {

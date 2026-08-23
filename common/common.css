@@ -286,35 +286,37 @@ tr:last-child td { border-bottom: none; }
   background: var(--border);
 }
 
-/* --- МЕТКИ НА КАРТОЧКАХ --- */
+/* --- МЕТКИ НА КАРТОЧКАХ ---
+   Справочная мелочь рядом с названием: одна буква в тонком кружке.
+   Намеренно неяркие — читаются, когда их ищут, и не спорят с названием. */
 .badge {
-  font-size: 0.65rem;
-  padding: 2px 6px;
-  border-radius: 4px;
+  font-size: 0.6rem;
   font-family: var(--font-body);
   font-weight: bold;
-  letter-spacing: 0.5px;
-  user-select: none;
+  line-height: 1;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
   border: 1px solid;
-  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  flex-shrink: 0;
+  opacity: 0.75;
+  transition: opacity 0.2s;
 }
 
+details[open] .badge { opacity: 1; }
+
 .badge-concentration {
-  background: var(--badge-conc-bg);
   color: var(--badge-conc-fg);
   border-color: var(--badge-conc-fg);
 }
 
 .badge-ritual {
-  background: var(--badge-ritual-bg);
   color: var(--badge-ritual-fg);
   border-color: var(--badge-ritual-fg);
-}
-
-.badge-free {
-  background: var(--accent-soft);
-  color: var(--gold);
-  border-color: var(--gold);
 }
 
 /* --- УВЕДОМЛЕНИЯ --- */
