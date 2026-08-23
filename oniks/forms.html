@@ -18,6 +18,50 @@
 
 <style>
   .summary-name { flex: 1; min-width: 0; }
+
+  /* Трекер дикого облика — кружки, а не жетон со счётчиком: так было
+     изначально и так привычнее. Клик по кружку тратит заряд или
+     возвращает его. */
+  .wild-shape-tracker {
+    padding: 10px 20px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    display: inline-block;
+  }
+
+  .slots-row {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .slot {
+    width: 30px;
+    height: 30px;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    transition: 0.3s;
+    padding: 0;
+    background: transparent;
+  }
+
+  .slot.active {
+    background: var(--accent);
+    box-shadow: 0 0 15px var(--accent), inset 0 0 5px white;
+  }
+
+  .slot.spent { background: transparent; border-color: #4b218b; }
+
+  .slot.spent::after {
+    content: "✕";
+    color: #4b218b;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
 </style>
 </head>
 <body>
@@ -27,7 +71,9 @@
 </header>
 
 <section class="resources-wrapper">
-  <div id="slots-grid" class="resource-row"></div>
+  <div class="wild-shape-tracker">
+    <div id="slots-grid" class="slots-row"></div>
+  </div>
   <button class="btn-base btn-quiet" id="rest-btn" type="button">⏳ Длительный отдых</button>
 </section>
 
@@ -133,10 +179,22 @@ function render() {
     };
     draw(preparedList, indexed.filter(x => x.form.prepared));
     draw(availableList, indexed.filter(x => !x.form.prepared));
-    document.getElementById('slots-grid').innerHTML =
-      Resources.rowHTML(shapeSlots, shapeDefs, 'data-shape');
+    renderTracker();
   });
   applyFilter();
+}
+
+/* Кружки заряда. Хранится это по-прежнему через Resources — так работает
+   общий длительный отдых, — но показывается как раньше. */
+function renderTracker() {
+  const { current, max } = shapeSlots.wildshape;
+  document.getElementById('slots-grid').innerHTML =
+    Array.from({ length: max }, (_, i) => `
+      <button class="slot ${i < current ? 'active' : 'spent'}" type="button"
+              data-slot-index="${i}"
+              aria-label="${i < current ? 'Потратить заряд' : 'Вернуть заряд'}"
+              title="Заряды дикого облика: ${current} из ${max}"></button>
+    `).join('');
 }
 
 function applyLongRest() {
@@ -145,15 +203,15 @@ function applyLongRest() {
 }
 
 document.addEventListener('click', e => {
-  const shapeBtn = e.target.closest('[data-shape]');
-  if (shapeBtn) {
-    const delta = Number(shapeBtn.dataset.delta);
-    if (Resources.change(shapeSlots, shapeBtn.dataset.shape, delta)) {
-      if (delta < 0) showNotice(`Заряды облика: осталось ${shapeSlots.wildshape.current}`);
-      render();
-    } else if (delta < 0) {
-      showNotice('Заряды дикого облика кончились');
-    }
+  /* Клик по кружку: горящий гасим, погасший зажигаем. Заряды тратятся
+     справа налево, поэтому нажатие на i-й кружок задаёт остаток напрямую. */
+  const slotBtn = e.target.closest('[data-slot-index]');
+  if (slotBtn) {
+    const index = Number(slotBtn.dataset.slotIndex);
+    const slot = shapeSlots.wildshape;
+    slot.current = index < slot.current ? index : index + 1;
+    save();
+    renderTracker();
     return;
   }
 
