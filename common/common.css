@@ -436,3 +436,17 @@ textarea.modal-input {
   from { opacity: 1; }
   to { opacity: 0; transform: translateX(20px); }
 }
+
+/* --- ТЕЛЕФОН ---
+   Safari на iOS сам приближает страницу, когда фокус попадает в поле мельче
+   16px, и обратно уже не отдаляет: лист так и остаётся шире экрана, правый
+   край срезан. Ровно 16px это отключают. Старая оболочка Ониксы обходилась
+   тем, что запрещала масштабирование целиком — вместе с обычным щипком. */
+@media (pointer: coarse) {
+  input,
+  select,
+  textarea,
+  .search-input,
+  .modal-input,
+  textarea.modal-input { font-size: 16px; }
+}

@@ -171,6 +171,9 @@ nav {
   width: 100%;
   overflow: hidden;
   position: relative;
+  /* Нижняя safe-area телефона: иначе последняя строка вкладки уезжает под
+     полоску-индикатор. Там, где выреза нет, значение равно нулю. */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 iframe {

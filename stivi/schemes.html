@@ -132,6 +132,11 @@
             padding: 8px; width: 76px; border-radius: 4px; font-family: monospace;
         }
         .phase-controls input[type="number"]:focus { outline: none; border-color: var(--accent); }
+        /* 16px, иначе Safari приближает страницу при фокусе и обратно
+           уже не отдаляет — чертёж перестаёт влезать по ширине. */
+        @media (pointer: coarse) {
+            .phase-controls input[type="number"] { font-size: 16px; }
+        }
 
         .btn-add {
             flex: 1 1 100px; background: var(--accent); color: #fff; border: none;
