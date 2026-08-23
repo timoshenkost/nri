@@ -48,10 +48,26 @@ const Spellbook = (() => {
     [...fromClass, ...personal.keys()].filter(name => libraryByName.has(name))
   );
 
-  const spells = [...names].map(name => ({
-    ...libraryByName.get(name),
-    ...(personal.get(name) || {})
-  }));
+  /* Персонаж может быть ограничен по кругу: у Артефактора половина уровня,
+     и высокие круги из списка класса только мешают искать. Отсекаем их,
+     но о личных записях, попавших под нож, предупреждаем — молча терять
+     выписанное вручную нельзя. */
+  const maxLevel = Number.isFinite(CHARACTER.maxSpellLevel)
+    ? CHARACTER.maxSpellLevel
+    : Infinity;
+
+  const cutPersonal = [];
+  const spells = [...names]
+    .map(name => ({ ...libraryByName.get(name), ...(personal.get(name) || {}) }))
+    .filter(spell => {
+      if (spell.levelNum <= maxLevel) return true;
+      if (personal.has(spell.name)) cutPersonal.push(spell.name);
+      return false;
+    });
+
+  if (cutPersonal.length) {
+    console.warn(`Скрыты как выше ${maxLevel} круга:`, cutPersonal);
+  }
 
   let slots = Resources.merge(slotDefs, null);
   let features = Resources.merge(featureDefs, null);
