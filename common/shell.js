@@ -284,6 +284,40 @@
     e.target.value = '';
   });
 
+  /* --- Высота оболочки ----------------------------------------------
+     Оболочка не скроллится сама, поэтому её высота обязана точно совпадать
+     с видимой областью экрана: лишние пиксели уезжают под панель браузера,
+     а добраться до них нечем. Именно так низ вкладки пропадал в Chrome на
+     Андроиде — 100dvh там оказывался больше, чем видно на самом деле.
+     visualViewport знает настоящую высоту, innerHeight — запасной путь. */
+
+  let shellWidth = window.innerWidth;
+  let shellHeight = 0;
+
+  function viewportHeight() {
+    const vv = window.visualViewport;
+    // При щипковом зуме видно меньше страницы, но сама страница не меньше.
+    const zoomed = vv && Math.abs(vv.scale - 1) > 0.01;
+    return Math.round(vv && !zoomed ? vv.height : window.innerHeight);
+  }
+
+  function fitToViewport() {
+    const width = window.innerWidth;
+    const height = viewportHeight();
+    // Высота резко просела, а ширина та же — это выехавшая клавиатура.
+    // Сжимать под неё оболочку не нужно: поле ввода живёт внутри вкладки.
+    const keyboard = width === shellWidth && shellHeight && height < shellHeight * 0.75;
+    shellWidth = width;
+    if (keyboard) return;
+    shellHeight = height;
+    document.body.style.height = height + 'px';
+  }
+
+  fitToViewport();
+  window.addEventListener('resize', fitToViewport);
+  // Поворот экрана: размеры доезжают не сразу, поэтому с задержкой.
+  window.addEventListener('orientationchange', () => setTimeout(fitToViewport, 200));
+
   /* --- Старт ------------------------------------------------------- */
 
   const moved = migrateLegacyKeys();
