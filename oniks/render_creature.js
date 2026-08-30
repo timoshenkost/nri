@@ -2,6 +2,9 @@
    вкладкой «Облики», поэтому наружу отдаётся только ТЕЛО карточки —
    обёртку <details> с нужным summary каждая страница строит сама. */
 
+/* Хиты необязательны: у дикого облика их не считают, поэтому в forms.js
+   этого поля нет и ячейка просто не рисуется. У животных она остаётся. */
+
 function renderStat(name, stat) {
   return `
     <div>
@@ -29,7 +32,7 @@ function renderCreatureBody(creature) {
       <div class="top-grid">
         <div><b>КЗ</b> ${esc(creature.ac)}</div>
         <div><b>Инициатива</b> ${esc(creature.initiative)}</div>
-        <div><b>Хиты</b> ${esc(creature.hp)}</div>
+        ${creature.hp ? `<div><b>Хиты</b> ${esc(creature.hp)}</div>` : ''}
         <div><b>Скорость</b> ${esc(creature.speed)}</div>
       </div>
 
