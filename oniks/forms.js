@@ -1,7 +1,7 @@
 const initialForms = [
   {
     name: "Механобык",
-    size: "Средний",
+    size: "Большой",
     type: "конструкт",
     ac: "20",
     initiative: "+1",
