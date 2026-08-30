@@ -148,7 +148,9 @@ const Spellbook = (() => {
     if (window.parent && window.parent !== window) {
       window.parent.postMessage({ type: 'long-rest' }, '*');
     } else {
+      LongRest.mark();
       applyLongRest();
+      LongRest.seen('spellbook');
     }
   }
 
@@ -299,8 +301,10 @@ const Spellbook = (() => {
       if (featureBtn) {
         const key = featureBtn.dataset.feature;
         const delta = Number(featureBtn.dataset.delta);
+        /* Тоста при трате нет: счётчик способности меняется на глазах,
+           а всплывающее окно на каждый клик только мешает. Остаётся
+           только предупреждение, когда тратить уже нечего. */
         if (Resources.change(features, key, delta)) {
-          if (delta < 0) showNotice(`${featureDefs[key].name}: осталось ${features[key].current}`);
           render();
         } else if (delta < 0) {
           showNotice(`${featureDefs[key].name}: применений не осталось`);
@@ -337,7 +341,9 @@ const Spellbook = (() => {
     });
 
     window.addEventListener('message', e => {
-      if (e.data && e.data.type === 'long-rest-apply') applyLongRest();
+      if (!e.data || e.data.type !== 'long-rest-apply') return;
+      applyLongRest();
+      LongRest.seen('spellbook');
     });
   }
 
@@ -347,6 +353,8 @@ const Spellbook = (() => {
     preparedList = document.getElementById('prepared-list');
     availableList = document.getElementById('available-list');
     bind();
+    // Отдых мог случиться, пока вкладка стояла закрытой.
+    LongRest.catchUp('spellbook', applyLongRest);
     render();
     applyFilter = initSearch(document.getElementById('search'), document.querySelector('main'));
   }

@@ -135,6 +135,21 @@ function updateUI() {
     });
 }
 
+/* Длительный отдых начинает новый день изделий: счётчик обнуляется так
+   же, как при смене суток. Команду присылает оболочка, а если отдых
+   случился, пока вкладка стояла закрытой, она доберёт его при загрузке. */
+function applyLongRest() {
+    state = { date: today(), items: [] };
+    save();
+    updateUI();
+}
+
+window.addEventListener('message', e => {
+    if (!e.data || e.data.type !== 'long-rest-apply') return;
+    applyLongRest();
+    LongRest.seen('stuff');
+});
+
 function createItem(name) {
     refreshDay();
     if (state.items.length >= MAX_ITEMS) return;
@@ -210,6 +225,7 @@ document.getElementById('reset-btn').addEventListener('click', () => {
 });
 
 renderApp();
+LongRest.catchUp('stuff', applyLongRest);
 updateUI();
 initSearch(document.getElementById("search"), document.querySelector("main"));
 </script>

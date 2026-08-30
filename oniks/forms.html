@@ -233,7 +233,9 @@ document.getElementById('rest-btn').addEventListener('click', () => {
       if (window.parent && window.parent !== window) {
         window.parent.postMessage({ type: 'long-rest' }, '*');
       } else {
+        LongRest.mark();
         applyLongRest();
+        LongRest.seen('forms');
       }
       showNotice('Силы восстановлены!');
     }
@@ -241,9 +243,13 @@ document.getElementById('rest-btn').addEventListener('click', () => {
 });
 
 window.addEventListener('message', e => {
-  if (e.data && e.data.type === 'long-rest-apply') applyLongRest();
+  if (!e.data || e.data.type !== 'long-rest-apply') return;
+  applyLongRest();
+  LongRest.seen('forms');
 });
 
+// Отдых мог случиться, пока вкладка стояла закрытой.
+LongRest.catchUp('forms', applyLongRest);
 render();
 applyFilter = initSearch(document.getElementById('search'), document.querySelector('main'));
 </script>

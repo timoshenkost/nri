@@ -220,6 +220,8 @@
   window.addEventListener('message', e => {
     if (!e.data || e.data.type !== 'long-rest') return;
 
+    // Метка нужна закрытым вкладкам: они доберут отдых при открытии.
+    LongRest.mark();
     longRestHP();
     content.querySelectorAll('iframe').forEach(frame => {
       if (frame.contentWindow) {
