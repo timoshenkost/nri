@@ -106,6 +106,27 @@
         }
         .val { font-size: 0.9rem; line-height: 1.4; }
 
+        /* Ресурсы: строка-галочка «это уже есть». Отмеченное гасим и
+           зачёркиваем — в списке сразу видно, чего ещё не хватает. */
+        .res-list { display: flex; flex-direction: column; gap: 2px; }
+        .res-row {
+            display: flex; align-items: flex-start; gap: 8px;
+            font-size: 0.9rem; line-height: 1.4;
+            padding: 3px 0; cursor: pointer;
+        }
+        .res-row input {
+            width: 16px; height: 16px; margin: 2px 0 0;
+            flex-shrink: 0; cursor: pointer;
+            accent-color: var(--accent);
+        }
+        .res-row.is-have { color: #6b6b6b; text-decoration: line-through; }
+
+        .res-count {
+            font-size: 0.6rem; font-weight: bold; letter-spacing: 1px;
+            font-family: monospace; color: #888; margin-left: 6px;
+        }
+        .res-count.is-full { color: var(--gold); }
+
         .phase-card {
             background: rgba(255, 255, 255, 0.03); border: 1px solid #3d3d3d;
             padding: 12px; border-radius: 4px; margin-bottom: 15px;
@@ -187,6 +208,36 @@
     let progressData = Store.get(STORAGE_KEY, {});
     if (!progressData || typeof progressData !== 'object') progressData = {};
 
+    /* Ресурсы описаны одной строкой через перенос, а галочки «это уже
+       есть» хранятся по тексту строки, а не по её номеру: если список в
+       schemes.js поправят, отметка просто пропадёт, а не переедет на
+       соседний материал. */
+    const RESOURCE_KEY = 'scheme_resources';
+    let resourceData = Store.get(RESOURCE_KEY, {});
+    if (!resourceData || typeof resourceData !== 'object') resourceData = {};
+
+    function resourceLines(recipe) {
+        return String(recipe.resources || '')
+            .split('\n')
+            .map(line => line.trim())
+            .filter(Boolean);
+    }
+
+    function haveSet(recipeId) {
+        const stored = resourceData[recipeId];
+        return new Set(Array.isArray(stored) ? stored : []);
+    }
+
+    function toggleResource(recipeId, line, checked) {
+        const set = haveSet(recipeId);
+        if (checked) set.add(line); else set.delete(line);
+
+        if (set.size) resourceData[recipeId] = [...set];
+        else delete resourceData[recipeId];
+
+        Store.set(RESOURCE_KEY, resourceData);
+    }
+
     /* Значения полей ввода живут отдельно от разметки, иначе перерисовка
        сбрасывала бы введённое число обратно на 10. */
     const inputValues = {};
@@ -233,6 +284,9 @@
         const totalPercent = totalMax > 0 ? (totalCurrent / totalMax) * 100 : 0;
         const isComplete = totalMax > 0 && totalCurrent >= totalMax;
 
+        const resLines = resourceLines(recipe);
+        const resHave = haveSet(recipe.id);
+
         const haystack = [recipe.name, recipe.type, recipe.effect, recipe.resources]
             .join(" ").toLowerCase();
 
@@ -259,9 +313,19 @@
                     <span class="label">Эффект</span>
                     <div class="val" style="white-space: pre-line;">${esc(recipe.effect)}</div>
                 </div>
-                <div class="info-block">
-                    <span class="label">Ресурсы</span>
-                    <div class="val" style="white-space: pre-line;">${esc(recipe.resources)}</div>
+                <div class="info-block" data-res-block="${esc(recipe.id)}">
+                    <span class="label">Ресурсы <span class="res-count"></span></span>
+                    <div class="res-list">
+                        ${resLines.map(line => `
+                        <label class="res-row ${resHave.has(line) ? 'is-have' : ''}">
+                            <input type="checkbox"
+                                   data-res-recipe="${esc(recipe.id)}"
+                                   data-res-line="${esc(line)}"
+                                   ${resHave.has(line) ? 'checked' : ''}
+                                   aria-label="Ресурс есть: ${esc(line)}">
+                            <span>${esc(line)}</span>
+                        </label>`).join('')}
+                    </div>
                 </div>
 
                 <div class="section-header" style="margin: 15px 0; font-size: 0.65rem;">Этапы производства</div>
@@ -346,7 +410,28 @@
         });
 
         refreshAllPreviews();
+        refreshAllResourceCounts();
         applyFilter();
+    }
+
+    function refreshResourceCount(block) {
+        const recipe = findRecipe(block.dataset.resBlock);
+        const counter = block.querySelector('.res-count');
+        if (!recipe || !counter) return;
+
+        const lines = resourceLines(recipe);
+        if (!lines.length) { counter.textContent = ''; return; }
+
+        const set = haveSet(recipe.id);
+        const have = lines.filter(line => set.has(line)).length;
+        const full = have === lines.length;
+
+        counter.textContent = full ? 'всё есть' : `${have} / ${lines.length}`;
+        counter.classList.toggle('is-full', full);
+    }
+
+    function refreshAllResourceCounts() {
+        list.querySelectorAll('[data-res-block]').forEach(refreshResourceCount);
     }
 
     /* Прогресс этапа = (результат проверки − сложность) × часы.
@@ -450,6 +535,19 @@
                 }
             });
         }
+    });
+
+    /* Галочка ресурса меняет только свою строку и счётчик: полная
+       перерисовка списка ради одного клика ни к чему. */
+    list.addEventListener('change', e => {
+        const box = e.target.closest('input[data-res-recipe]');
+        if (!box) return;
+
+        toggleResource(box.dataset.resRecipe, box.dataset.resLine, box.checked);
+        box.closest('.res-row').classList.toggle('is-have', box.checked);
+
+        const block = box.closest('[data-res-block]');
+        if (block) refreshResourceCount(block);
     });
 
     /* Запоминаем введённое число, чтобы перерисовка его не съедала,

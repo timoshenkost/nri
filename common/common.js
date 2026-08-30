@@ -59,6 +59,7 @@ const SAVE_KEYS = [
   'my_hp',
   'my_max_hp',
   'my_temp_hp',
+  'money',
   'active_tab',
   'spellbook_data'
 ].concat(CHARACTER.extraSaveKeys || []);

@@ -32,6 +32,9 @@
               title="Восстановить всё" aria-label="Восстановить все хиты">❤</button>
     </div>
 
+    <button class="data-btn" id="purse-btn" type="button"
+            title="Кошелёк" aria-label="Монеты персонажа">💰</button>
+
     <button class="data-btn" id="backup-btn" type="button"
             title="Сохранение персонажа" aria-label="Экспорт и импорт данных">💾</button>
   `;
@@ -62,7 +65,21 @@
     </div>
   `;
 
-  document.body.append(nav, content, backup);
+  const purse = document.createElement('div');
+  purse.id = 'purse-overlay';
+  purse.className = 'modal-overlay';
+  purse.innerHTML = `
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Кошелёк">
+      <div class="modal-title">Кошелёк · ${esc(CHARACTER.name)}</div>
+      <div class="modal-text" id="purse-total"></div>
+      <div class="coin-list" id="coin-list"></div>
+      <div class="modal-buttons">
+        <button class="modal-btn btn-cancel" id="purse-close" type="button">Закрыть</button>
+      </div>
+    </div>
+  `;
+
+  document.body.append(nav, content, backup, purse);
 
   /* --- Хиты -------------------------------------------------------- */
 
@@ -210,6 +227,131 @@
       }
     });
   });
+
+  /* --- Кошелёк ------------------------------------------------------
+     Все монеты лежат в одном ключе money. Курс из книги правил:
+     1 пм = 10 зм = 100 см = 1000 мм, поэтому итог считается в медяках и
+     переводится в золото только для показа — иначе горсть меди пропала бы
+     при округлении. */
+
+  const COINS = [
+    { key: 'pp', short: 'ПМ', name: 'Платиновые', rate: 1000 },
+    { key: 'gp', short: 'ЗМ', name: 'Золотые',    rate: 100 },
+    { key: 'sp', short: 'СМ', name: 'Серебряные', rate: 10 },
+    { key: 'cp', short: 'ММ', name: 'Медные',     rate: 1 }
+  ];
+
+  const savedMoney = Store.get('money', {});
+  const money = {};
+  COINS.forEach(coin => {
+    const value = Math.floor(Number(savedMoney && savedMoney[coin.key]));
+    money[coin.key] = Number.isFinite(value) && value > 0 ? value : 0;
+  });
+
+  const purseTotalEl = document.getElementById('purse-total');
+  const coinListEl = document.getElementById('coin-list');
+
+  function totalLabel() {
+    const copper = COINS.reduce((sum, coin) => sum + money[coin.key] * coin.rate, 0);
+    const gold = Math.floor(copper / 100);
+    const rest = copper % 100;
+    return rest === 0 ? `${gold} зм` : `${gold},${String(rest).padStart(2, '0')} зм`;
+  }
+
+  function updateMoneyUI() {
+    purseTotalEl.innerHTML = `Всего: <b>${esc(totalLabel())}</b>`;
+    coinListEl.innerHTML = COINS.map(coin => `
+      <div class="coin-row ${money[coin.key] === 0 ? 'is-empty' : ''}">
+        <span class="coin-name">
+          <b class="coin-mark coin-${esc(coin.key)}">${esc(coin.short)}</b>${esc(coin.name)}
+        </span>
+        <span class="coin-controls">
+          <button class="btn-base resource-btn" type="button"
+                  data-coin="${esc(coin.key)}" data-delta="-1"
+                  aria-label="Убрать одну: ${esc(coin.name)}">−</button>
+          <button class="coin-count" type="button" data-coin-edit="${esc(coin.key)}"
+                  title="Ввести число"
+                  aria-label="Изменить числом: ${esc(coin.name)}">${money[coin.key]}</button>
+          <button class="btn-base resource-btn" type="button"
+                  data-coin="${esc(coin.key)}" data-delta="1"
+                  aria-label="Добавить одну: ${esc(coin.name)}">+</button>
+        </span>
+      </div>
+    `).join('');
+  }
+
+  function commitMoney() {
+    Store.set('money', money);
+    updateMoneyUI();
+  }
+
+  function changeMoney(key, delta) {
+    const next = money[key] + delta;
+    // В минус кошелёк не уходит: это скорее опечатка, чем долг.
+    if (next < 0) return;
+    money[key] = next;
+    commitMoney();
+  }
+
+  /* Ввод числом устроен как у хитов: одно окно умеет и добавить, и
+     потратить, и выставить точное значение. */
+  function promptCoin(key) {
+    const coin = COINS.find(c => c.key === key);
+    Modal.prompt({
+      title: `${coin.name} монеты`,
+      text: `Сейчас ${money[key]} ${coin.short}`,
+      value: '',
+      actions: [
+        { label: 'Добавить', className: 'btn-confirm', onClick: v => {
+            const n = fromInput(v);
+            if (n) changeMoney(key, n);
+          } },
+        { label: 'Потратить', className: 'btn-cancel', onClick: v => {
+            const n = fromInput(v);
+            if (!n) return;
+            if (n > money[key]) {
+              showNotice(`Не хватает: в кошельке ${money[key]} ${coin.short}`);
+              return;
+            }
+            changeMoney(key, -n);
+          } },
+        { label: 'Задать', className: 'btn-cancel', onClick: v => {
+            const parsed = parseInt(v, 10);
+            if (!Number.isFinite(parsed)) return;
+            money[key] = Math.max(0, parsed);
+            commitMoney();
+          } }
+      ]
+    });
+  }
+
+  function closePurse() { purse.classList.remove('is-open'); }
+
+  document.getElementById('purse-btn').addEventListener('click', () => {
+    purse.classList.add('is-open');
+  });
+
+  document.getElementById('purse-close').addEventListener('click', closePurse);
+
+  purse.addEventListener('click', e => {
+    if (e.target === purse) { closePurse(); return; }
+
+    const step = e.target.closest('[data-coin]');
+    if (step) { changeMoney(step.dataset.coin, Number(step.dataset.delta)); return; }
+
+    const edit = e.target.closest('[data-coin-edit]');
+    if (edit) promptCoin(edit.dataset.coinEdit);
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape' || !purse.classList.contains('is-open')) return;
+    // Поверх кошелька может стоять окно ввода — тогда Escape закрывает его.
+    const input = document.getElementById('modal-overlay');
+    if (input && input.classList.contains('is-open')) return;
+    closePurse();
+  });
+
+  updateMoneyUI();
 
   /* --- Вкладки ----------------------------------------------------- */
 

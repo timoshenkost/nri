@@ -200,6 +200,84 @@ iframe.active { display: block; }
   text-transform: uppercase;
 }
 
+/* Кошелёк: строки монет внутри модалки. Достоинство узнаётся по цвету
+   металла, поэтому у каждой монеты свой токен темы. */
+.coin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.coin-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 10px;
+  background: var(--inset);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.coin-row.is-empty { opacity: 0.5; }
+
+.coin-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.coin-mark {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+}
+
+.coin-pp { color: var(--coin-pp); }
+.coin-gp { color: var(--coin-gp); }
+.coin-sp { color: var(--coin-sp); }
+.coin-cp { color: var(--coin-cp); }
+
+.coin-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.coin-count {
+  min-width: 54px;
+  padding: 2px 4px;
+  background: none;
+  border: none;
+  border-radius: var(--radius);
+  color: var(--gold);
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.coin-count:hover { background: var(--accent-soft); }
+.coin-count:focus-visible { outline: 2px solid var(--accent-light); outline-offset: 1px; }
+
+#purse-total b {
+  color: var(--gold);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+}
+
 @media (max-width: 480px) {
   .tab-btn { font-size: 0.9rem; padding: 12px 2px; }
   .tab-label { display: none; }
@@ -208,4 +286,6 @@ iframe.active { display: block; }
   .hp-display-wrapper { min-width: 45px; font-size: 0.9rem; }
   .hp-temp { font-size: 0.7rem; padding: 1px 6px; margin-right: 2px; }
   .data-btn { padding: 10px 6px; font-size: 0.85rem; }
+  .coin-name { letter-spacing: 0; }
+  .coin-count { min-width: 46px; }
 }
