@@ -121,11 +121,34 @@
         }
         .res-row.is-have { color: #6b6b6b; text-decoration: line-through; }
 
-        .res-count {
+        .res-count, .cond-count {
             font-size: 0.6rem; font-weight: bold; letter-spacing: 1px;
             font-family: monospace; color: #888; margin-left: 6px;
         }
-        .res-count.is-full { color: var(--gold); }
+        .res-count.is-full, .cond-count.is-full { color: var(--gold); }
+
+        /* Доп. условия — не материал, который либо есть, либо нет, а
+           действие, которое нужно повторить нужное число раз. Поэтому
+           у строки счётчик с «+/−», а не галочка. */
+        .cond-list { display: flex; flex-direction: column; gap: 6px; }
+        .cond-row {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 10px; font-size: 0.9rem; line-height: 1.4; padding: 2px 0;
+        }
+        .cond-row.is-met .cond-text { color: #6b6b6b; text-decoration: line-through; }
+        .cond-controls { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .cond-tally {
+            font-family: monospace; font-size: 0.8rem; color: #888;
+            min-width: 46px; text-align: center;
+        }
+        .cond-row.is-met .cond-tally { color: var(--gold); font-weight: bold; }
+        .btn-cond {
+            width: 30px; height: 30px; padding: 0; flex-shrink: 0;
+            background: var(--surface); border: 1px solid #444; color: var(--accent-light);
+            border-radius: 4px; cursor: pointer; font-family: inherit;
+            font-size: 1rem; line-height: 1; transition: 0.2s;
+        }
+        .btn-cond:active { transform: scale(0.94); border-color: var(--accent); }
 
         .phase-card {
             background: rgba(255, 255, 255, 0.03); border: 1px solid #3d3d3d;
@@ -238,6 +261,46 @@
         Store.set(RESOURCE_KEY, resourceData);
     }
 
+    /* Доп. условия — то, что нужно сделать, а не добыть: «трижды применить
+       заклинание». В очки работы это не идёт (иначе портит итог в шапке),
+       поэтому у каждого условия отдельный счётчик применений. Хранится,
+       как и ресурсы, по тексту условия. */
+    const CONDITION_KEY = 'scheme_conditions';
+    let conditionData = Store.get(CONDITION_KEY, {});
+    if (!conditionData || typeof conditionData !== 'object') conditionData = {};
+
+    function conditionsOf(recipe) {
+        return Array.isArray(recipe.conditions) ? recipe.conditions : [];
+    }
+
+    function conditionTimes(cond) {
+        return Math.max(1, parseInt(cond.times, 10) || 1);
+    }
+
+    function conditionCount(recipeId, text) {
+        const forRecipe = conditionData[recipeId];
+        const raw = forRecipe && typeof forRecipe === 'object' ? forRecipe[text] : 0;
+        return Math.max(0, Number(raw) || 0);
+    }
+
+    function stepCondition(recipeId, text, times, delta) {
+        const next = Math.max(0, Math.min(conditionCount(recipeId, text) + delta, times));
+        const forRecipe = conditionData[recipeId] && typeof conditionData[recipeId] === 'object'
+            ? conditionData[recipeId] : {};
+
+        if (next > 0) {
+            forRecipe[text] = next;
+            conditionData[recipeId] = forRecipe;
+        } else {
+            delete forRecipe[text];
+            if (Object.keys(forRecipe).length) conditionData[recipeId] = forRecipe;
+            else delete conditionData[recipeId];
+        }
+
+        Store.set(CONDITION_KEY, conditionData);
+        return next;
+    }
+
     /* Значения полей ввода живут отдельно от разметки, иначе перерисовка
        сбрасывала бы введённое число обратно на 10. */
     const inputValues = {};
@@ -286,8 +349,10 @@
 
         const resLines = resourceLines(recipe);
         const resHave = haveSet(recipe.id);
+        const conds = conditionsOf(recipe);
 
-        const haystack = [recipe.name, recipe.type, recipe.effect, recipe.resources]
+        const haystack = [recipe.name, recipe.type, recipe.effect, recipe.resources,
+                          conds.map(c => c.text).join(" ")]
             .join(" ").toLowerCase();
 
         return `
@@ -327,6 +392,30 @@
                         </label>`).join('')}
                     </div>
                 </div>
+                ${conds.length ? `
+                <div class="info-block" data-cond-block="${esc(recipe.id)}">
+                    <span class="label">Доп. условия <span class="cond-count"></span></span>
+                    <div class="cond-list">
+                        ${conds.map(cond => {
+                            const times = conditionTimes(cond);
+                            const have = Math.min(conditionCount(recipe.id, cond.text), times);
+                            return `
+                        <div class="cond-row ${have >= times ? 'is-met' : ''}"
+                             data-cond-recipe="${esc(recipe.id)}"
+                             data-cond-text="${esc(cond.text)}"
+                             data-cond-times="${times}">
+                            <span class="cond-text">${esc(cond.text)}</span>
+                            <span class="cond-controls">
+                                <button class="btn-cond" type="button" data-cond-step="-1"
+                                        aria-label="Убрать применение: ${esc(cond.text)}">−</button>
+                                <span class="cond-tally">${have} / ${times}</span>
+                                <button class="btn-cond" type="button" data-cond-step="1"
+                                        aria-label="Отметить применение: ${esc(cond.text)}">+</button>
+                            </span>
+                        </div>`;
+                        }).join('')}
+                    </div>
+                </div>` : ''}
 
                 <div class="section-header" style="margin: 15px 0; font-size: 0.65rem;">Этапы производства</div>
 
@@ -411,6 +500,7 @@
 
         refreshAllPreviews();
         refreshAllResourceCounts();
+        refreshAllConditionCounts();
         applyFilter();
     }
 
@@ -432,6 +522,25 @@
 
     function refreshAllResourceCounts() {
         list.querySelectorAll('[data-res-block]').forEach(refreshResourceCount);
+    }
+
+    function refreshConditionCount(block) {
+        const recipe = findRecipe(block.dataset.condBlock);
+        const counter = block.querySelector('.cond-count');
+        if (!recipe || !counter) return;
+
+        const conds = conditionsOf(recipe);
+        if (!conds.length) { counter.textContent = ''; return; }
+
+        const met = conds.filter(c => conditionCount(recipe.id, c.text) >= conditionTimes(c)).length;
+        const full = met === conds.length;
+
+        counter.textContent = full ? 'выполнено' : `${met} / ${conds.length}`;
+        counter.classList.toggle('is-full', full);
+    }
+
+    function refreshAllConditionCounts() {
+        list.querySelectorAll('[data-cond-block]').forEach(refreshConditionCount);
     }
 
     /* Прогресс этапа = (результат проверки − сложность) × часы.
@@ -474,6 +583,23 @@
 
     /* Один делегированный обработчик вместо onclick в разметке. */
     list.addEventListener('click', e => {
+        /* Счётчик условия правит только свою строку: полная перерисовка
+           ради одного нажатия схлопнула бы раскрытый чертёж. */
+        const stepBtn = e.target.closest('[data-cond-step]');
+        if (stepBtn) {
+            const row = stepBtn.closest('.cond-row');
+            const times = Number(row.dataset.condTimes) || 1;
+            const next = stepCondition(row.dataset.condRecipe, row.dataset.condText,
+                                       times, Number(stepBtn.dataset.condStep));
+
+            row.querySelector('.cond-tally').textContent = `${next} / ${times}`;
+            row.classList.toggle('is-met', next >= times);
+
+            const block = row.closest('[data-cond-block]');
+            if (block) refreshConditionCount(block);
+            return;
+        }
+
         const craftBtn = e.target.closest('[data-craft]');
         if (craftBtn) {
             const card = craftBtn.closest('.phase-card');
@@ -530,6 +656,9 @@
                 onConfirm: () => {
                     delete progressData[id];
                     Store.set(STORAGE_KEY, progressData);
+                    // Отметки условий — тоже проделанная работа, снимаем их же.
+                    delete conditionData[id];
+                    Store.set(CONDITION_KEY, conditionData);
                     render();
                     showNotice('Прогресс чертежа сброшен');
                 }

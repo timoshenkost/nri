@@ -31,7 +31,7 @@ const CHARACTER = {
   },
 
   // Ключи, которые есть только у этого листа — попадут в экспорт.
-  extraSaveKeys: ['schemes', 'scheme_resources', 'daily_creation_state'],
+  extraSaveKeys: ['schemes', 'scheme_resources', 'scheme_conditions', 'daily_creation_state'],
 
   /* Старая версия листа открывалась с диска, а у file:// location.host —
      пустая строка. То есть перенос сработает при локальном открытии, где
