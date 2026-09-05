@@ -1,0 +1,52 @@
+/* Тема Барди Би — сцена: розовый софит, позолота, бархат занавеса. */
+
+:root {
+  --page-bg: radial-gradient(circle at 75% 0%, #2b1020, #120810 78%);
+
+  --surface: #1c0b14;
+  --card: #23101a;
+  --card-open: #2e1523;
+  --inset: rgba(0, 0, 0, 0.22);
+  --inset-solid: rgba(28, 11, 20, 0.92);
+
+  --accent: #d94f8c;
+  --accent-light: #f9a8d4;
+  --accent-soft: rgba(217, 79, 140, 0.12);
+
+  --text: #f3e3ea;
+  --muted: #9b7a89;
+  --gold: #e8b84b;
+
+  --danger: #7f1d3f;
+  --danger-light: #f43f5e;
+  --hp-red: #ff4d4d;
+  --hp-green: #2ecc71;
+
+  --border: rgba(217, 79, 140, 0.25);
+  --border-strong: #8e2a58;
+  --btn-bg: #241019;
+
+  --radius: 10px;
+  --font-body: 'Palatino Linotype', 'Book Antiqua', 'Georgia', serif;
+  --font-mono: 'Courier New', monospace;
+
+  --glow: 0 0 18px rgba(217, 79, 140, 0.35);
+  --card-open-glow: 0 0 18px rgba(217, 79, 140, 0.2);
+  --header-border: 2px solid var(--accent);
+  --title-shadow: 0 0 10px rgba(217, 79, 140, 0.55);
+  --title-spacing: 4px;
+
+  --mark-color: #f9a8d4;
+  --mark-glow: 0 0 8px rgba(249, 168, 212, 0.6);
+
+  /* Не золотой: золотой занят звездой бесплатного каста. */
+  --badge-conc-fg: #64b5f6;
+  --badge-ritual-fg: #22c55e;
+
+  /* Монеты кошелька: цвет металла одинаков в любой теме — он опознаёт
+     достоинство, а не оформление листа. */
+  --coin-pp: #dfe7ef;
+  --coin-gp: #ffd700;
+  --coin-sp: #a8a9ad;
+  --coin-cp: #b87333;
+}

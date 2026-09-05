@@ -39,12 +39,19 @@ const Spellbook = (() => {
           касты, а также заклинания не из класса — от черт или вида.
      Личная запись всегда сильнее, поэтому prepared и roleplay побеждают
      значения из библиотеки. */
-  const ownClasses = CHARACTER.spellClasses || [];
+  /* fixedSpells — персонаж вообще не подготавливает заклинания: набор
+     выбран при создании и не меняется. Список класса тогда не подтягивает
+     ничего: в книге ровно то, что записано в spells.js, и ни строчкой
+     больше. */
+  const fixedSpells = !!CHARACTER.fixedSpells;
+
+  const ownClasses = fixedSpells ? [] : (CHARACTER.spellClasses || []);
 
   /* fixedCantrips — заговоры выбраны при создании персонажа и не меняются.
      Тогда список класса их не подтягивает: иначе в общем списке висели бы
-     заговоры, которые персонаж не знает и выучить не может. */
-  const fixedCantrips = !!CHARACTER.fixedCantrips;
+     заговоры, которые персонаж не знает и выучить не может. Если не меняются
+     даже заклинания, то заговоры тем более. */
+  const fixedCantrips = !!CHARACTER.fixedCantrips || fixedSpells;
 
   const fromClass = spellLibrary
     .filter(s => (s.classes || []).some(c => ownClasses.includes(c)))
@@ -74,6 +81,14 @@ const Spellbook = (() => {
 
   if (cutPersonal.length) {
     console.warn(`Скрыты как выше ${maxLevel} круга:`, cutPersonal);
+  }
+
+  /* Фиксированный набор — это то же самое, что locked у каждой записи:
+     подготовленность берётся из файла, кнопок «+»/«−» нет, всё сразу
+     готово к сотворению. Отдельной ветки в отрисовке не нужно, а «Общий
+     список» остаётся пустым — страница такого персонажа его не рисует. */
+  if (fixedSpells) {
+    spells.forEach(spell => { spell.prepared = true; spell.locked = true; });
   }
 
   let slots = Resources.merge(slotDefs, null);
@@ -281,7 +296,8 @@ const Spellbook = (() => {
     rerender([preparedList, availableList], () => {
       const indexed = spells.map((spell, index) => ({ spell, index }));
       renderSection(preparedList, indexed.filter(x => x.spell.prepared));
-      renderSection(availableList, indexed.filter(x => !x.spell.prepared));
+      // Второго списка на странице может не быть — тогда делить нечего.
+      if (availableList) renderSection(availableList, indexed.filter(x => !x.spell.prepared));
       renderResources();
     });
     applyFilter();
