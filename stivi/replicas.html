@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#1a1a1a">
+<title>Реплики</title>
+
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="../common/common.css">
+<link rel="stylesheet" href="../common/spellbook.css">
+
+<script src="character.js"></script>
+<script src="../common/common.js"></script>
+<script src="replicas.js"></script>
+
+<style>
+  /* Счётчик созданных предметов. Лимит не запрещает лишнее — по правилам
+     самый старый предмет просто исчезает, — поэтому перебор показываем
+     цветом, а не блокировкой кнопки. */
+  .replica-count {
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .replica-count b {
+    color: var(--accent-light);
+    font-size: 1.1rem;
+    letter-spacing: 0;
+  }
+
+  .replica-count.is-over b { color: var(--hp-red); }
+
+  .badge-attunement {
+    color: var(--badge-ritual-fg);
+    border-color: var(--badge-ritual-fg);
+  }
+
+  .replica-table { margin-top: 12px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>✨ Реплики</h1>
+</header>
+
+<section class="resources-wrapper">
+  <div id="limit-box" class="replica-count"></div>
+</section>
+
+<main>
+  <input id="search" class="search-input" type="search"
+         placeholder="Поиск схемы…"
+         aria-label="Поиск по репликам">
+
+  <div class="section-header">Созданные предметы</div>
+  <div id="prepared-list"></div>
+
+  <div class="section-header">Известные схемы</div>
+  <div id="available-list"></div>
+
+  <p class="search-empty" hidden>Ничего не найдено.</p>
+</main>
+
+<script>
+/* Сколько реплик Стиви держит одновременно — из таблицы класса: на
+   7 уровне это три предмета. Поднимать вместе с уровнем. */
+const REPLICA_LIMIT = 3;
+
+const STORAGE_KEY = 'prepared_replicas_data';
+
+const replicas = initialReplicas.map(r => ({ ...r, made: false }));
+const madeNames = Store.get(STORAGE_KEY, []);
+if (Array.isArray(madeNames)) {
+  replicas.forEach(r => { if (madeNames.includes(r.name)) r.made = true; });
+}
+
+const preparedList = document.getElementById('prepared-list');
+const availableList = document.getElementById('available-list');
+const limitBox = document.getElementById('limit-box');
+let applyFilter = () => {};
+
+function save() {
+  Store.set(STORAGE_KEY, replicas.filter(r => r.made).map(r => r.name));
+}
+
+function tableHTML(table) {
+  if (!table) return '';
+  return `
+    <table class="replica-table">
+      <thead><tr>${table.head.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead>
+      <tbody>
+        ${table.rows.map(row => `<tr>${row.map(cell => `<td>${esc(cell)}</td>`).join('')}</tr>`).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function replicaCardHTML(replica, index) {
+  const attunement = replica.attunement
+    ? `<span class="badge badge-attunement" title="${esc(replica.attunementNote || 'Требуется настройка')}">Н</span>`
+    : '';
+
+  const haystack = [
+    replica.name, replica.type, replica.description,
+    replica.attunement ? 'настройка' : '',
+    replica.table ? replica.table.rows.map(row => row.join(' ')).join(' ') : ''
+  ].join(' ').toLowerCase();
+
+  return `
+    <details data-key="${esc(replica.name)}" data-search="${esc(haystack)}">
+      <summary>
+        <span class="spell-title"><span class="spell-name">${esc(replica.name)}</span>${attunement}</span>
+        <span class="action-group">
+          <button class="btn-base move-btn" type="button" data-toggle="${index}"
+                  aria-label="${replica.made ? 'Развеять предмет' : 'Создать предмет'}">
+            ${replica.made ? '−' : '+'}
+          </button>
+        </span>
+      </summary>
+      <div class="block">
+        <div class="spell-meta">
+          <div><span class="label">Предмет</span>${esc(replica.type)}</div>
+          <div><span class="label">Схема</span>${replica.scheme} уровень</div>
+        </div>
+        <p style="white-space: pre-line;">${esc(replica.description)}</p>
+        ${tableHTML(replica.table)}
+      </div>
+    </details>
+  `;
+}
+
+/* Внутри раздела схемы идут группами по уровню — как заклинания по кругам. */
+function drawSection(container, items) {
+  if (items.length === 0) { container.innerHTML = ''; return; }
+
+  const sorted = [...items].sort((a, b) =>
+    a.replica.scheme - b.replica.scheme || a.replica.name.localeCompare(b.replica.name));
+
+  const groups = [];
+  sorted.forEach(item => {
+    const level = item.replica.scheme;
+    if (!groups.length || groups[groups.length - 1].level !== level) groups.push({ level, items: [] });
+    groups[groups.length - 1].items.push(item);
+  });
+
+  container.innerHTML = groups.map(group => `
+    <div class="group">
+      <div class="section-header level-header">Схемы ${group.level} уровня</div>
+      ${group.items.map(x => replicaCardHTML(x.replica, x.index)).join('')}
+    </div>
+  `).join('');
+}
+
+function renderLimit() {
+  const made = replicas.filter(r => r.made).length;
+  limitBox.className = `replica-count ${made > REPLICA_LIMIT ? 'is-over' : ''}`;
+  limitBox.innerHTML = `Создано <b>${made} / ${REPLICA_LIMIT}</b>`;
+}
+
+function render() {
+  save();
+  rerender([preparedList, availableList], () => {
+    const indexed = replicas.map((replica, index) => ({ replica, index }));
+    drawSection(preparedList, indexed.filter(x => x.replica.made));
+    drawSection(availableList, indexed.filter(x => !x.replica.made));
+    renderLimit();
+  });
+  applyFilter();
+}
+
+document.addEventListener('click', e => {
+  const toggleBtn = e.target.closest('[data-toggle]');
+  if (!toggleBtn) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  const replica = replicas[Number(toggleBtn.dataset.toggle)];
+  if (!replica) return;
+
+  const wasMade = replica.made;
+  replica.made = !wasMade;
+  render();
+
+  if (!wasMade && replicas.filter(r => r.made).length > REPLICA_LIMIT) {
+    showNotice(`Предметов больше ${REPLICA_LIMIT}: самый старый исчезает`);
+  }
+});
+
+render();
+applyFilter = initSearch(document.getElementById('search'), document.querySelector('main'));
+</script>
+
+</body>
+</html>

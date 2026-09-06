@@ -31,7 +31,8 @@ const CHARACTER = {
   },
 
   // Ключи, которые есть только у этого листа — попадут в экспорт.
-  extraSaveKeys: ['schemes', 'scheme_resources', 'scheme_conditions', 'daily_creation_state'],
+  extraSaveKeys: ['schemes', 'scheme_resources', 'scheme_conditions', 'daily_creation_state',
+                  'prepared_replicas_data'],
 
   /* Старая версия листа открывалась с диска, а у file:// location.host —
      пустая строка. То есть перенос сработает при локальном открытии, где
@@ -40,9 +41,10 @@ const CHARACTER = {
   legacyOrigin: '',
 
   tabs: [
-    { id: 'spells-tab',  file: 'spells_book.html', icon: '⚙',  title: 'Заклинания' },
-    { id: 'tools-tab',   file: 'tools.html',       icon: '🛠', title: 'Инструменты' },
-    { id: 'schemes-tab', file: 'schemes.html',     icon: '📜', title: 'Схемы' },
-    { id: 'stuff-tab',   file: 'stuff.html',       icon: '🎒', title: 'Магия вещей' },
+    { id: 'spells-tab',   file: 'spells_book.html', icon: '⚙',  title: 'Заклинания' },
+    { id: 'tools-tab',    file: 'tools.html',       icon: '🛠', title: 'Инструменты' },
+    { id: 'schemes-tab',  file: 'schemes.html',     icon: '📜', title: 'Схемы' },
+    { id: 'stuff-tab',    file: 'stuff.html',       icon: '🎒', title: 'Магия вещей' },
+    { id: 'replicas-tab', file: 'replicas.html',    icon: '✨', title: 'Реплики' },
   ],
 };
