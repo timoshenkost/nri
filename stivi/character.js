@@ -43,6 +43,6 @@ const CHARACTER = {
     { id: 'spells-tab',  file: 'spells_book.html', icon: '⚙',  title: 'Заклинания' },
     { id: 'tools-tab',   file: 'tools.html',       icon: '🛠', title: 'Инструменты' },
     { id: 'schemes-tab', file: 'schemes.html',     icon: '📜', title: 'Схемы' },
-    { id: 'stuff-tab',   file: 'stuff.html',       icon: '🎒', title: 'Снаряжение' },
+    { id: 'stuff-tab',   file: 'stuff.html',       icon: '🎒', title: 'Магия вещей' },
   ],
 };
