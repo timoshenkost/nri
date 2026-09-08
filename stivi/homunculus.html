@@ -208,11 +208,25 @@ function fill(text) {
   return String(text).replace(/\{ур\}/g, level);
 }
 
+/* «Магическая связь» прибавляет круг заклинания к спасброскам, поэтому в
+   колонке «спас» стоит уже итог — по нему и бросать, складывать второй раз
+   не надо. Модификатор рядом остаётся чистым: он про характеристику. */
+function stats() {
+  const out = {};
+  Object.keys(homunculusBase.stats).forEach(key => {
+    const stat = homunculusBase.stats[key];
+    const save = Number(stat.mod) + level;
+    out[key] = { value: stat.value, mod: stat.mod, save: (save < 0 ? '' : '+') + save };
+  });
+  return out;
+}
+
 function creature() {
   const extra = key => mods().reduce((all, mod) => all.concat(mod[key] || []), []);
   const withLevel = list => list.map(item => ({ name: item.name, desc: fill(item.desc) }));
 
   return Object.assign({}, homunculusBase, {
+    stats: stats(),
     ac: String(homunculusBase.ac + sum('ac')),
     hp: `${maxHP()} (Кости хитов ${level}к4)`,
     resistances: mods().map(mod => mod.resistances).filter(Boolean).join(', '),
