@@ -25,10 +25,13 @@
     padding: 20px;
     border-bottom: 1px solid var(--border);
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
+    justify-content: center;
   }
+
+  /* .resource-controls раздвигает содержимое по краям — счётчику ресурса
+     так и надо, а здесь кнопки должны стоять кучкой. */
+  .level-row,
+  .hp-controls { justify-content: center; }
 
   .level-row { gap: 6px; }
 
@@ -47,14 +50,55 @@
     font-weight: bold;
   }
 
-  /* Хиты кончились — карточка гаснет; осталась треть — цифра краснеет. */
-  .resource-item.is-hurt .resource-count { color: var(--hp-red); }
+  /* Хиты устроены как в шапке персонажа: по числу щёлкаешь и вводишь урон,
+     лечение или временные, а максимум не трогаешь — он считается из круга
+     заклинания и улучшений. */
+  .hp-controls { gap: 4px; }
+
+  .hp-current,
+  .hp-max {
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    font-weight: bold;
+  }
+
+  .hp-current {
+    background: none;
+    border: none;
+    padding: 0 2px;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+
+  .hp-max { color: var(--gold); }
+  .hp-divider { opacity: 0.5; }
+
+  .hp-temp {
+    background: none;
+    border: 1px solid var(--gold);
+    border-radius: var(--radius);
+    color: var(--gold);
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 1px 5px;
+    margin-right: 4px;
+    cursor: pointer;
+  }
+
+  .hp-full {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    margin-left: 4px;
+    border-color: var(--accent);
+    color: var(--hp-red);
+  }
 
   .upgrade {
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    padding: 10px 12px;
+    padding: 12px;
     margin-bottom: 8px;
     background: var(--card);
     border: 1px solid var(--border);
@@ -67,18 +111,21 @@
     background: var(--card-open);
   }
 
-  .upgrade input { margin-top: 2px; accent-color: var(--accent); }
-  .upgrade b { color: var(--accent-light); }
-  .upgrade.is-on b { color: var(--gold); }
+  .upgrade input { margin-top: 3px; accent-color: var(--accent); }
+  .upgrade-body { min-width: 0; }
+  .upgrade-name { color: var(--accent-light); font-weight: bold; }
+  .upgrade.is-on .upgrade-name { color: var(--gold); }
 
-  .upgrade-effect {
+  .upgrade-line {
     display: block;
-    font-size: 0.8rem;
-    color: var(--muted);
-    margin-top: 2px;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    opacity: 0.85;
   }
 
-  .upgrade.is-on .upgrade-effect { color: var(--text); opacity: 0.8; }
+  .upgrade-line b { color: var(--muted); }
+  .upgrade.is-on .upgrade-line { opacity: 1; }
+  .upgrade.is-on .upgrade-line b { color: var(--accent-light); }
 </style>
 </head>
 <body>
@@ -89,7 +136,6 @@
 
 <section class="panel">
   <div class="resource-row" id="panel"></div>
-  <button id="resummon" class="btn-base btn-quiet" type="button">Призвать заново</button>
 </section>
 
 <main>
@@ -121,8 +167,14 @@ const UPGRADES = Object.values(initialRecipes)
 const LEVEL_KEY = 'homunculus_level';
 const MODS_KEY = 'homunculus_mods';
 const HP_KEY = 'homunculus_hp';
+const TEMP_KEY = 'homunculus_temp_hp';
 
-let level = Number(Store.get(LEVEL_KEY, LEVELS[0]));
+function readNumber(key, fallback) {
+  const value = Number(Store.get(key, fallback));
+  return Number.isFinite(value) ? value : fallback;
+}
+
+let level = readNumber(LEVEL_KEY, LEVELS[0]);
 if (!LEVELS.includes(level)) level = LEVELS[0];
 
 let installed = Store.get(MODS_KEY, []);
@@ -146,8 +198,10 @@ function maxHP() {
   return homunculusHP(level) + sum('hp');
 }
 
-let hp = Number(Store.get(HP_KEY, maxHP()));
-if (!Number.isFinite(hp)) hp = maxHP();
+let hp = Math.max(0, readNumber(HP_KEY, maxHP()));
+/* Временные хиты живут отдельно: максимумом не ограничены, тратятся
+   первыми и лечением не восстанавливаются — как у персонажа. */
+let tempHP = Math.max(0, readNumber(TEMP_KEY, 0));
 
 // Круг заклинания записан в данных как {ур} — подставляем число.
 function fill(text) {
@@ -168,25 +222,37 @@ function creature() {
   });
 }
 
-/* Короткая строчка «что даёт» — собирается из самой прибавки, поэтому не
-   разъедется с блоком статистики. */
-function summary(upgrade) {
+/* Что улучшение делает — построчно и той же формулировкой, что попадёт в
+   блок статистики. Берём из самой прибавки, а не из строки effect в
+   «Схемах»: та написана коротко, для сборки, и говорила бы «+2 КД» там,
+   где в блоке стоит КЗ. */
+function changes(upgrade) {
   const mod = upgrade.homunculus;
-  const parts = [];
-  if (mod.ac) parts.push(`+${mod.ac} КЗ`);
-  if (mod.hp) parts.push(`+${mod.hp} хитов`);
-  if (mod.resistances) parts.push(`сопротивление: ${mod.resistances}`);
-  (mod.traits || []).forEach(trait => parts.push(trait.name));
-  (mod.actions || []).forEach(action => parts.push(action.name));
-  return parts.join(' · ');
+  const lines = [];
+  if (mod.ac) lines.push(['Класс Защиты', `+${mod.ac}`]);
+  if (mod.hp) lines.push(['Хиты', `+${mod.hp}`]);
+  if (mod.resistances) lines.push(['Сопротивление урону', mod.resistances]);
+  (mod.traits || []).forEach(trait => {
+    lines.push([`Особенность «${trait.name}»`, fill(trait.desc)]);
+  });
+  (mod.actions || []).forEach(action => {
+    lines.push([`Действие «${action.name}»`, fill(action.desc)]);
+  });
+  return lines;
+}
+
+function hpColor(share) {
+  if (share >= 1) return 'var(--hp-green)';
+  if (share > 0.5) return 'var(--text)';
+  if (share > 0.25) return 'var(--gold)';
+  return 'var(--hp-red)';
 }
 
 function render() {
   const max = maxHP();
   hp = Math.max(0, Math.min(hp, max));
   Store.set(HP_KEY, hp);
-
-  const state = hp === 0 ? 'is-empty' : (hp * 3 <= max ? 'is-hurt' : '');
+  Store.set(TEMP_KEY, tempHP);
 
   panel.innerHTML = `
     <div class="resource-item">
@@ -200,18 +266,21 @@ function render() {
       </div>
     </div>
 
-    <div class="resource-item ${state}">
+    <div class="resource-item ${hp === 0 ? 'is-empty' : ''}">
       <span class="resource-name">Хиты</span>
-      <div class="resource-controls">
-        <button class="btn-base resource-btn" type="button"
-                data-hp="-5" aria-label="Урон 5">−5</button>
-        <button class="btn-base resource-btn" type="button"
-                data-hp="-1" aria-label="Урон 1">−</button>
-        <span class="resource-count">${hp}/${max}</span>
-        <button class="btn-base resource-btn" type="button"
-                data-hp="1" aria-label="Вылечить 1">+</button>
-        <button class="btn-base resource-btn" type="button"
-                data-hp="5" aria-label="Вылечить 5">+5</button>
+      <div class="resource-controls hp-controls">
+        <button class="hp-temp" id="hp-temp" type="button" ${tempHP ? '' : 'hidden'}
+                title="Временные хиты — тратятся первыми"
+                aria-label="Временные хиты">+${tempHP}</button>
+        <button class="hp-current" id="hp-current" type="button"
+                style="color: ${hpColor(max > 0 ? hp / max : 0)}"
+                title="Ввести урон, лечение или временные хиты"
+                aria-label="Ввести урон или лечение">${hp}</button>
+        <span class="hp-divider">/</span>
+        <span class="hp-max">${max}</span>
+        <button class="btn-base hp-full" id="hp-full" type="button"
+                title="Свежий гомункул: хиты под завязку"
+                aria-label="Восстановить все хиты">❤</button>
       </div>
     </div>
   `;
@@ -230,9 +299,11 @@ function render() {
     return `
       <label class="upgrade ${on ? 'is-on' : ''}">
         <input type="checkbox" data-upgrade="${esc(upgrade.id)}" ${on ? 'checked' : ''}>
-        <span>
-          <b>${esc(upgrade.name)}</b>
-          <span class="upgrade-effect">${esc(summary(upgrade))}</span>
+        <span class="upgrade-body">
+          <span class="upgrade-name">${esc(upgrade.name)}</span>
+          ${changes(upgrade).map(([label, text]) => `
+            <span class="upgrade-line"><b>${esc(label)}:</b> ${esc(text)}</span>
+          `).join('')}
         </span>
       </label>
     `;
@@ -248,27 +319,74 @@ function keepFull(change) {
   render();
 }
 
+function amountOf(raw) {
+  const amount = Math.abs(parseInt(raw, 10));
+  return Number.isFinite(amount) && amount > 0 ? amount : 0;
+}
+
+// Урон сначала съедает временные хиты, лечение их не возвращает.
+function damage(amount) {
+  const absorbed = Math.min(tempHP, amount);
+  tempHP -= absorbed;
+  hp = Math.max(0, hp - (amount - absorbed));
+  render();
+}
+
+function heal(amount) {
+  hp = Math.min(hp + amount, maxHP());
+  render();
+}
+
+// Временные хиты не складываются: остаётся тот запас, что больше.
+function setTemp(value, keepHigher) {
+  const parsed = Math.max(0, parseInt(value, 10) || 0);
+  if (keepHigher && parsed <= tempHP) {
+    if (parsed > 0) showNotice(`Прежний запас больше — оставлено ${tempHP}`);
+    return;
+  }
+  tempHP = parsed;
+  render();
+}
+
 document.addEventListener('click', event => {
+  if (event.target.closest('#hp-current')) {
+    Modal.prompt({
+      title: 'Урон или лечение',
+      text: tempHP > 0
+        ? `Сейчас ${hp} (+${tempHP}) / ${maxHP()}`
+        : `Сейчас ${hp} / ${maxHP()}`,
+      value: '',
+      actions: [
+        { label: 'Урон', className: 'btn-confirm', onClick: v => { const n = amountOf(v); if (n) damage(n); } },
+        { label: 'Лечение', className: 'btn-cancel', onClick: v => { const n = amountOf(v); if (n) heal(n); } },
+        { label: 'Временные', className: 'btn-cancel', onClick: v => { const n = amountOf(v); if (n) setTemp(n, true); } }
+      ]
+    });
+    return;
+  }
+
+  if (event.target.closest('#hp-temp')) {
+    Modal.prompt({
+      title: 'Временные хиты',
+      text: 'Точное значение запаса. 0 — снять.',
+      value: tempHP,
+      onConfirm: value => setTemp(value, false)
+    });
+    return;
+  }
+
+  if (event.target.closest('#hp-full')) {
+    hp = maxHP();
+    render();
+    return;
+  }
+
   const levelBtn = event.target.closest('[data-level]');
   if (levelBtn) {
     keepFull(() => {
       level = Number(levelBtn.dataset.level);
       Store.set(LEVEL_KEY, level);
     });
-    return;
-  }
-
-  const hpBtn = event.target.closest('[data-hp]');
-  if (hpBtn) {
-    hp += Number(hpBtn.dataset.hp);
-    render();
-    return;
-  }
-
-  if (event.target.closest('#resummon')) {
-    hp = maxHP();
-    render();
-    showNotice('Гомункул призван заново');
   }
 });
 
