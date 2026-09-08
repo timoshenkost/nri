@@ -208,17 +208,24 @@ function fill(text) {
   return String(text).replace(/\{ур\}/g, level);
 }
 
-/* «Магическая связь» прибавляет круг заклинания к спасброскам, поэтому в
-   колонке «спас» стоит уже итог — по нему и бросать, складывать второй раз
-   не надо. Модификатор рядом остаётся чистым: он про характеристику. */
+/* «Магическая связь» прибавляет круг заклинания и к проверкам, и к
+   спасброскам, поэтому в обеих колонках стоит уже итог — по ним и бросать.
+   Чтобы бонус не прибавили второй раз, к тексту особенности приписка. */
 function stats() {
   const out = {};
+  const sign = number => (number < 0 ? '' : '+') + number;
   Object.keys(homunculusBase.stats).forEach(key => {
     const stat = homunculusBase.stats[key];
-    const save = Number(stat.mod) + level;
-    out[key] = { value: stat.value, mod: stat.mod, save: (save < 0 ? '' : '+') + save };
+    const total = sign(Number(stat.mod) + level);
+    out[key] = { value: stat.value, mod: total, save: total };
   });
   return out;
+}
+
+function noteBond(trait) {
+  return trait.name === 'Магическая связь'
+    ? { name: trait.name, desc: trait.desc + ' Модификаторы и спасброски в блоке уже с этим бонусом.' }
+    : trait;
 }
 
 function creature() {
@@ -230,7 +237,7 @@ function creature() {
     ac: String(homunculusBase.ac + sum('ac')),
     hp: `${maxHP()} (Кости хитов ${level}к4)`,
     resistances: mods().map(mod => mod.resistances).filter(Boolean).join(', '),
-    traits: withLevel(homunculusBase.traits.concat(extra('traits'))),
+    traits: withLevel(homunculusBase.traits.concat(extra('traits'))).map(noteBond),
     actions: withLevel(homunculusBase.actions.concat(extra('actions'))),
     reactions: withLevel(homunculusBase.reactions)
   });
