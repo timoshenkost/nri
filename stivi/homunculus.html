@@ -224,7 +224,7 @@ function stats() {
 
 function noteBond(trait) {
   return trait.name === 'Магическая связь'
-    ? { name: trait.name, desc: trait.desc + ' Модификаторы и спасброски в блоке уже с этим бонусом.' }
+    ? { name: trait.name, desc: trait.desc.replace('{ур}', '{ур} (уже учтено в мод и спас)') }
     : trait;
 }
 
@@ -237,7 +237,7 @@ function creature() {
     ac: String(homunculusBase.ac + sum('ac')),
     hp: `${maxHP()} (Кости хитов ${level}к4)`,
     resistances: mods().map(mod => mod.resistances).filter(Boolean).join(', '),
-    traits: withLevel(homunculusBase.traits.concat(extra('traits'))).map(noteBond),
+    traits: withLevel(homunculusBase.traits.concat(extra('traits')).map(noteBond)),
     actions: withLevel(homunculusBase.actions.concat(extra('actions'))),
     reactions: withLevel(homunculusBase.reactions)
   });
