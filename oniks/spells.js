@@ -248,7 +248,7 @@ const characterSpells = [
     roleplay: "Вокруг меня разливается мягкое золотистое сияние, которое приятно покалывает кожу и затягивает раны моих союзников.",
   },
   {
-    name: "Возрождение",
+    name: "Оживление",
     prepared: false,
     locked: false,
     isFree: false,
