@@ -2,10 +2,11 @@ const initialAnimals = [
   {
     name: "Ворон",
     size: "Крошечный",
+    type: "Зверь",
     ac: "12",
     initiative: "+2 (12)",
-    hp: "2",
-    speed: "10 фт., полёт 50 фт.",
+    hp: "2 (1к4)",
+    speed: "10 футов, Полёта 50 футов",
     stats: {
       str: { value: 2, mod: "-4", save: "-4" },
       dex: { value: 14, mod: "+2", save: "+2" },
@@ -14,9 +15,10 @@ const initialAnimals = [
       wis: { value: 13, mod: "+1", save: "+1" },
       cha: { value: 6, mod: "-2", save: "-2" }
     },
+    skills: "Восприятие +3",
     senses: "пассивное Восприятие 13",
     languages: "нет",
-    cr: "0",
+    cr: "0 (10 опыта; БВ +2)",
     traits: [
       {
         name: "Подражание звукам",
@@ -33,10 +35,11 @@ const initialAnimals = [
   {
     name: "Кошка",
     size: "Крошечный",
+    type: "Зверь",
     ac: "12",
     initiative: "+2 (12)",
-    hp: "2",
-    speed: "40 фт., лазание 40 фт.",
+    hp: "2 (1к4)",
+    speed: "40 футов, Лазания 40 футов",
     stats: {
       str: { value: 3, mod: "-4", save: "-4" },
       dex: { value: 15, mod: "+2", save: "+4" },
@@ -45,9 +48,10 @@ const initialAnimals = [
       wis: { value: 12, mod: "+1", save: "+1" },
       cha: { value: 7, mod: "-2", save: "-2" }
     },
-    senses: "Тёмное зрение 60 фт., пассивное Восприятие 13",
+    skills: "Восприятие +3, Скрытность +4",
+    senses: "Тёмное зрение 60 футов, пассивное Восприятие 13",
     languages: "нет",
-    cr: "0",
+    cr: "0 (10 опыта; БВ +2)",
     traits: [
       {
         name: "Прыгучая",
@@ -64,10 +68,11 @@ const initialAnimals = [
   {
     name: "Крыса",
     size: "Крошечный",
+    type: "Зверь",
     ac: "10",
     initiative: "+0 (10)",
-    hp: "1",
-    speed: "20 фт., лазание 20 фт.",
+    hp: "1 (1к4 - 1)",
+    speed: "20 футов, Лазания 20 футов",
     stats: {
       str: { value: 2, mod: "-4", save: "-4" },
       dex: { value: 11, mod: "+0", save: "+0" },
@@ -76,9 +81,10 @@ const initialAnimals = [
       wis: { value: 10, mod: "+0", save: "+0" },
       cha: { value: 4, mod: "-3", save: "-3" }
     },
-    senses: "Тёмное зрение 30 фт., пассивное Восприятие 12",
+    skills: "Восприятие +2",
+    senses: "Тёмное зрение 30 футов, пассивное Восприятие 12",
     languages: "нет",
-    cr: "0",
+    cr: "0 (10 опыта; БВ +2)",
     traits: [
       {
         name: "Проворство",
@@ -95,10 +101,11 @@ const initialAnimals = [
   {
     name: "Куница",
     size: "Крошечный",
+    type: "Зверь",
     ac: "13",
     initiative: "+3 (13)",
-    hp: "1",
-    speed: "30 фт., лазание 30 фт.",
+    hp: "1 (1к4 - 1)",
+    speed: "30 футов, Лазания 30 футов",
     stats: {
       str: { value: 3, mod: "-4", save: "-4" },
       dex: { value: 16, mod: "+3", save: "+3" },
@@ -107,9 +114,10 @@ const initialAnimals = [
       wis: { value: 12, mod: "+1", save: "+1" },
       cha: { value: 3, mod: "-4", save: "-4" }
     },
-    senses: "Тёмное зрение 60 фт., пассивное Восприятие 13",
+    skills: "Акробатика +5, Восприятие +3, Скрытность +5",
+    senses: "Тёмное зрение 60 футов, пассивное Восприятие 13",
     languages: "нет",
-    cr: "0",
+    cr: "0 (10 опыта; БВ +2)",
     actions: [
       {
         name: "Укус",
@@ -120,10 +128,11 @@ const initialAnimals = [
   {
     name: "Летучая мышь",
     size: "Крошечный",
+    type: "Зверь",
     ac: "12",
     initiative: "+2 (12)",
-    hp: "1",
-    speed: "5 фт., полёт 30 фт.",
+    hp: "1 (1к4 - 1)",
+    speed: "5 футов, Полёта 30 футов",
     stats: {
       str: { value: 2, mod: "-4", save: "-4" },
       dex: { value: 15, mod: "+2", save: "+2" },
@@ -132,9 +141,9 @@ const initialAnimals = [
       wis: { value: 12, mod: "+1", save: "+1" },
       cha: { value: 4, mod: "-3", save: "-3" }
     },
-    senses: "Слепое зрение 60 фт., пассивное Восприятие 11",
+    senses: "пассивное Восприятие 11, Слепое зрение 60 футов",
     languages: "нет",
-    cr: "0",
+    cr: "0 (10 опыта; БВ +2)",
     actions: [
       {
         name: "Укус",
@@ -145,10 +154,11 @@ const initialAnimals = [
   {
     name: "Лягушка",
     size: "Крошечный",
+    type: "Зверь",
     ac: "11",
     initiative: "+1 (11)",
-    hp: "1",
-    speed: "20 фт., плавание 20 фт.",
+    hp: "1 (1к4 - 1)",
+    speed: "20 футов, Плавания 20 футов",
     stats: {
       str: { value: 1, mod: "-5", save: "-5" },
       dex: { value: 13, mod: "+1", save: "+1" },
@@ -157,9 +167,10 @@ const initialAnimals = [
       wis: { value: 8, mod: "-1", save: "-1" },
       cha: { value: 3, mod: "-4", save: "-4" }
     },
-    senses: "Тёмное зрение 30 фт., пассивное Восприятие 11",
+    skills: "Восприятие +1, Скрытность +3",
+    senses: "Тёмное зрение 30 футов, пассивное Восприятие 11",
     languages: "нет",
-    cr: "0",
+    cr: "0 (10 опыта; БВ +2)",
     traits: [
       {
         name: "Амфибия",
@@ -180,10 +191,11 @@ const initialAnimals = [
   {
     name: "Осьминог",
     size: "Маленький",
+    type: "Зверь",
     ac: "12",
     initiative: "+2 (12)",
-    hp: "3",
-    speed: "5 фт., плавание 30 фт.",
+    hp: "3 (1к6)",
+    speed: "5 футов, Плавания 30 футов",
     stats: {
       str: { value: 4, mod: "-3", save: "-3" },
       dex: { value: 15, mod: "+2", save: "+2" },
@@ -192,9 +204,10 @@ const initialAnimals = [
       wis: { value: 10, mod: "+0", save: "+0" },
       cha: { value: 4, mod: "-3", save: "-3" }
     },
-    senses: "Тёмное зрение 30 фт., пассивное Восприятие 12",
+    skills: "Восприятие +2, Скрытность +6",
+    senses: "Тёмное зрение 30 футов, пассивное Восприятие 12",
     languages: "нет",
-    cr: "0",
+    cr: "0 (10 опыта; БВ +2)",
     traits: [
       {
         name: "Уплотнение",
@@ -221,10 +234,11 @@ const initialAnimals = [
   {
     name: "Паук",
     size: "Крошечный",
+    type: "Зверь",
     ac: "12",
     initiative: "+2 (12)",
-    hp: "1",
-    speed: "20 фт., лазание 20 фт.",
+    hp: "1 (1к4 - 1)",
+    speed: "20 футов, Лазания 20 футов",
     stats: {
       str: { value: 2, mod: "-4", save: "-4" },
       dex: { value: 14, mod: "+2", save: "+2" },
@@ -233,9 +247,10 @@ const initialAnimals = [
       wis: { value: 10, mod: "+0", save: "+0" },
       cha: { value: 2, mod: "-4", save: "-4" }
     },
-    senses: "Тёмное зрение 30 фт., пассивное Восприятие 10",
+    skills: "Скрытность +4",
+    senses: "Тёмное зрение 30 футов, пассивное Восприятие 10",
     languages: "нет",
-    cr: "0",
+    cr: "0 (10 опыта; БВ +2)",
     traits: [
       {
         name: "Паучье лазание",
@@ -256,10 +271,11 @@ const initialAnimals = [
   {
     name: "Сова",
     size: "Крошечный",
+    type: "Зверь",
     ac: "11",
     initiative: "+1 (11)",
-    hp: "1",
-    speed: "5 фт., полёт 60 фт.",
+    hp: "1 (1к4 - 1)",
+    speed: "5 футов, Полёта 60 футов",
     stats: {
       str: { value: 3, mod: "-4", save: "-4" },
       dex: { value: 13, mod: "+1", save: "+1" },
@@ -268,9 +284,10 @@ const initialAnimals = [
       wis: { value: 12, mod: "+1", save: "+1" },
       cha: { value: 7, mod: "-2", save: "-2" }
     },
-    senses: "Тёмное зрение 120 фт., пассивное Восприятие 15",
+    skills: "Восприятие +5, Скрытность +5",
+    senses: "Тёмное зрение 120 футов, пассивное Восприятие 15",
     languages: "нет",
-    cr: "0",
+    cr: "0 (10 опыта; БВ +2)",
     traits: [
       {
         name: "Облёт",
@@ -287,10 +304,11 @@ const initialAnimals = [
   {
     name: "Ястреб",
     size: "Крошечный",
+    type: "Зверь",
     ac: "13",
     initiative: "+3 (13)",
-    hp: "1",
-    speed: "10 фт., полёт 60 фт.",
+    hp: "1 (1к4 - 1)",
+    speed: "10 футов, Полёта 60 футов",
     stats: {
       str: { value: 5, mod: "-3", save: "-3" },
       dex: { value: 16, mod: "+3", save: "+3" },
@@ -299,9 +317,10 @@ const initialAnimals = [
       wis: { value: 14, mod: "+2", save: "+2" },
       cha: { value: 6, mod: "-2", save: "-2" }
     },
+    skills: "Восприятие +6",
     senses: "пассивное Восприятие 16",
     languages: "нет",
-    cr: "0",
+    cr: "0 (10 опыта; БВ +2)",
     actions: [
       {
         name: "Когти",
@@ -312,10 +331,11 @@ const initialAnimals = [
   {
     name: "Ящерица",
     size: "Крошечный",
+    type: "Зверь",
     ac: "10",
     initiative: "+0 (10)",
-    hp: "2",
-    speed: "20 фт., лазание 20 фт.",
+    hp: "2 (1к4)",
+    speed: "20 футов, Лазания 20 футов",
     stats: {
       str: { value: 2, mod: "-4", save: "-4" },
       dex: { value: 11, mod: "+0", save: "+0" },
@@ -324,9 +344,9 @@ const initialAnimals = [
       wis: { value: 8, mod: "-1", save: "-1" },
       cha: { value: 3, mod: "-4", save: "-4" }
     },
-    senses: "Тёмное зрение 30 фт., пассивное Восприятие 9",
+    senses: "Тёмное зрение 30 футов, пассивное Восприятие 9",
     languages: "нет",
-    cr: "0",
+    cr: "0 (10 опыта; БВ +2)",
     traits: [
       {
         name: "Паучье лазание",
@@ -478,7 +498,7 @@ const initialAnimals = [
     ac: "13",
     initiative: "+3 (13)",
     hp: "25 (10к4)",
-    speed: "40 фт.",
+    speed: "40 футов",
     stats: {
       str: { value: 5, mod: "-3", save: "-3" },
       dex: { value: 17, mod: "+3", save: "+3" },
@@ -520,12 +540,12 @@ const initialAnimals = [
   },
   {
     name: "Красный слаад",
-    size: "Большой",
+    size: "Большая",
     type: "Аберрация",
     ac: "14",
     initiative: "+1 (11)",
     hp: "93 (11к10 + 33)",
-    speed: "30 фт.",
+    speed: "30 футов",
     stats: {
       str: { value: 16, mod: "+3", save: "+3" },
       dex: { value: 12, mod: "+1", save: "+1" },

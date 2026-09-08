@@ -2,10 +2,10 @@ const initialForms = [
   {
     name: "Механобык",
     size: "Большой",
-    type: "конструкт",
+    type: "Конструкт",
     ac: "20",
     initiative: "+1 (11)",
-    speed: "40 фт.",
+    speed: "40 футов",
     stats: {
       str: { value: 20, mod: "+5", save: "+5" },
       dex: { value: 12, mod: "+1", save: "+1" },
@@ -39,9 +39,10 @@ const initialForms = [
   {
     name: "Саблезубый тигр",
     size: "Большой",
+    type: "Зверь",
     ac: "13",
     initiative: "+3 (13)",
-    speed: "40 фт.",
+    speed: "40 футов",
     is_armor: true,
     stats: {
       str: { value: 18, mod: "+4", save: "+6" },
@@ -51,9 +52,10 @@ const initialForms = [
       wis: { value: 12, mod: "+1", save: "+1" },
       cha: { value: 8, mod: "-1", save: "-1" }
     },
+    skills: "Восприятие +5, Скрытность +7",
     senses: "Тёмное зрение 60 футов, пассивное Восприятие 15",
     languages: "нет",
-    cr: "2",
+    cr: "2 (450 опыта; БВ +2)",
     traits: [
       {
         name: "Прыжок с разбега",
@@ -74,6 +76,7 @@ const initialForms = [
   {
     name: "Охотничья акула",
     size: "Большой",
+    type: "Зверь",
     ac: "12",
     initiative: "+2 (12)",
     speed: "5 футов, Плавания 40 футов",
@@ -85,9 +88,10 @@ const initialForms = [
       wis: { value: 10, mod: "+0", save: "+0" },
       cha: { value: 4, mod: "-3", save: "-3" }
     },
+    skills: "Восприятие +2",
     senses: "пассивное Восприятие 12, Слепое зрение 60 футов",
     languages: "нет",
-    cr: "2",
+    cr: "2 (450 опыта; БВ +2)",
     traits: [
       {
         name: "Подводное дыхание",
@@ -104,6 +108,7 @@ const initialForms = [
   {
     name: "Гигантский удав",
     size: "Огромный",
+    type: "Зверь",
     ac: "12",
     initiative: "+2 (12)",
     speed: "30 футов, Плавания 30 футов",
@@ -116,9 +121,10 @@ const initialForms = [
       wis: { value: 10, mod: "+0", save: "+0" },
       cha: { value: 3, mod: "-4", save: "-4" }
     },
+    skills: "Восприятие +2",
     senses: "пассивное Восприятие 12, Слепое зрение 10 футов",
     languages: "нет",
-    cr: "2",
+    cr: "2 (450 опыта; БВ +2)",
     actions: [
       {
         name: "Мультиатака",
@@ -137,6 +143,7 @@ const initialForms = [
   {
     name: "Белый медведь",
     size: "Большой",
+    type: "Зверь",
     ac: "12",
     initiative: "+2 (12)",
     speed: "40 футов, Плавания 40 футов",
@@ -148,9 +155,11 @@ const initialForms = [
       wis: { value: 13, mod: "+1", save: "+1" },
       cha: { value: 7, mod: "-2", save: "-2" }
     },
+    skills: "Восприятие +5, Скрытность +4",
+    resistances: "Холод",
     senses: "Тёмное зрение 60 футов, пассивное Восприятие 15",
     languages: "нет",
-    cr: "2",
+    cr: "2 (450 опыта; БВ +2)",
     actions: [
       {
         name: "Мультиатака",
@@ -165,6 +174,7 @@ const initialForms = [
   {
     name: "Аллозавр",
     size: "Большой",
+    type: "Зверь (Динозавр)",
     ac: "13",
     initiative: "+1 (11)",
     speed: "60 футов",
@@ -177,9 +187,10 @@ const initialForms = [
       wis: { value: 12, mod: "+1", save: "+1" },
       cha: { value: 5, mod: "-3", save: "-3" }
     },
+    skills: "Восприятие +5",
     senses: "пассивное Восприятие 15",
     languages: "нет",
-    cr: "2",
+    cr: "2 (450 опыта; БВ +2)",
     actions: [
       {
         name: "Укус",
@@ -194,6 +205,7 @@ const initialForms = [
   {
     name: "Гигантский паук",
     size: "Большой",
+    type: "Зверь",
     ac: "14",
     initiative: "+3 (13)",
     speed: "30 футов, Лазания 30 футов",
@@ -206,9 +218,10 @@ const initialForms = [
       wis: { value: 11, mod: "+0", save: "+0" },
       cha: { value: 4, mod: "-3", save: "-3" }
     },
+    skills: "Восприятие +4, Скрытность +7",
     senses: "Тёмное зрение 60 футов, пассивное Восприятие 14",
     languages: "нет",
-    cr: "1",
+    cr: "1 (200 опыта; БВ +2)",
     traits: [
       {
         name: "Паучье лазание",
@@ -233,6 +246,7 @@ const initialForms = [
   {
     name: "Боевой конь",
     size: "Большой",
+    type: "Зверь",
     ac: "11",
     initiative: "+1 (11)",
     speed: "60 футов",
@@ -247,7 +261,7 @@ const initialForms = [
     },
     senses: "пассивное Восприятие 11",
     languages: "нет",
-    cr: "1/2",
+    cr: "1/2 (100 опыта; БВ +2)",
     actions: [
       {
         name: "Копыта",
@@ -258,6 +272,7 @@ const initialForms = [
   {
     name: "Кошка",
     size: "Крошечный",
+    type: "Зверь",
     ac: "12",
     initiative: "+2 (12)",
     speed: "40 футов, Лазания 40 футов",
@@ -269,9 +284,10 @@ const initialForms = [
       wis: { value: 12, mod: "+1", save: "+1" },
       cha: { value: 7, mod: "-2", save: "-2" }
     },
+    skills: "Восприятие +3, Скрытность +4",
     senses: "Тёмное зрение 60 футов, пассивное Восприятие 13",
     languages: "нет",
-    cr: "0",
+    cr: "0 (10 опыта; БВ +2)",
     traits: [
       {
         name: "Прыгучая",
@@ -288,9 +304,10 @@ const initialForms = [
   {
     name: "Гигантская многоножка",
     size: "Маленький",
+    type: "Зверь",
     ac: "14",
     initiative: "+2 (12)",
-    speed: "30 фт., лазание 30 фт.",
+    speed: "30 футов, Лазания 30 футов",
     stats: {
       str: { value: 5, mod: "-3", save: "-3" },
       dex: { value: 14, mod: "+2", save: "+2" },
@@ -299,9 +316,9 @@ const initialForms = [
       wis: { value: 7, mod: "-2", save: "-2" },
       cha: { value: 3, mod: "-4", save: "-4" }
     },
-    senses: "Слепое зрение 30 фт., пассивное Восприятие 8",
+    senses: "пассивное Восприятие 8, Слепое зрение 30 футов",
     languages: "нет",
-    cr: "1/4",
+    cr: "1/4 (50 опыта; БВ +2)",
     actions: [
       {
         name: "Укус",
