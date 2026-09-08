@@ -31,20 +31,24 @@
 </main>
 
 <script>
-document.getElementById('app').innerHTML = `
-  <div class="group">
-    ${initialAnimals.map(creature => `
-      <details class="creature"
-               data-key="${esc(creature.name)}"
-               data-search="${esc(creatureHaystack(creature))}">
-        <summary>
-          <span>${esc(creature.name)}${creature.size ? ` <span class="size">${esc(creature.size)}</span>` : ''}</span>
-        </summary>
-        ${renderCreatureBody(creature)}
-      </details>
-    `).join('')}
-  </div>
-`;
+/* Существа разложены по разделам из animalCategories тем же groupByTags,
+   что и инструменты у Стиви. Поиск прячет опустевшие разделы сам. */
+document.getElementById('app').innerHTML =
+  groupByTags(initialAnimals, animalCategories).map(([category, creatures]) => `
+    <div class="group">
+      <div class="section-header">${esc(category)}</div>
+      ${creatures.map(creature => `
+        <details class="creature"
+                 data-key="${esc(creature.name)}"
+                 data-search="${esc(creatureHaystack(creature))}">
+          <summary>
+            <span>${esc(creature.name)}${creature.size ? ` <span class="size">${esc(creature.size)}</span>` : ''}</span>
+          </summary>
+          ${renderCreatureBody(creature)}
+        </details>
+      `).join('')}
+    </div>
+  `).join('');
 
 initSearch(document.getElementById('search'), document.querySelector('main'));
 </script>
