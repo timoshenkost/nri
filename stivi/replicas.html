@@ -16,9 +16,8 @@
 <script src="replicas.js"></script>
 
 <style>
-  /* Счётчик созданных предметов. Лимит не запрещает лишнее — по правилам
-     самый старый предмет просто исчезает, — поэтому перебор показываем
-     цветом, а не блокировкой кнопки. */
+  /* Счётчик созданных предметов. Больше лимита создать нельзя: когда набрано
+     сколько положено, счётчик загорается, а плюсы у остальных схем гаснут. */
   .replica-count {
     font-size: 0.8rem;
     letter-spacing: 2px;
@@ -32,7 +31,13 @@
     letter-spacing: 0;
   }
 
-  .replica-count.is-over b { color: var(--hp-red); }
+  .replica-count.is-full b { color: var(--gold); }
+
+  .move-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+    border-color: var(--border);
+  }
 
   .badge-attunement {
     color: var(--badge-ritual-fg);
@@ -100,7 +105,15 @@ function tableHTML(table) {
   `;
 }
 
+function madeCount() {
+  return replicas.filter(r => r.made).length;
+}
+
 function replicaCardHTML(replica, index) {
+  // Набрали предел — плюсы у несозданных схем гаснут до тех пор, пока
+  // что-нибудь не развеют.
+  const blocked = !replica.made && madeCount() >= REPLICA_LIMIT;
+
   const attunement = replica.attunement
     ? `<span class="badge badge-attunement" title="${esc(replica.attunementNote || 'Требуется настройка')}">Н</span>`
     : '';
@@ -117,6 +130,8 @@ function replicaCardHTML(replica, index) {
         <span class="spell-title"><span class="spell-name">${esc(replica.name)}</span>${attunement}</span>
         <span class="action-group">
           <button class="btn-base move-btn" type="button" data-toggle="${index}"
+                  ${blocked ? 'disabled' : ''}
+                  title="${blocked ? `Создано ${REPLICA_LIMIT} из ${REPLICA_LIMIT} — сначала развейте что-нибудь` : ''}"
                   aria-label="${replica.made ? 'Развеять предмет' : 'Создать предмет'}">
             ${replica.made ? '−' : '+'}
           </button>
@@ -157,8 +172,8 @@ function drawSection(container, items) {
 }
 
 function renderLimit() {
-  const made = replicas.filter(r => r.made).length;
-  limitBox.className = `replica-count ${made > REPLICA_LIMIT ? 'is-over' : ''}`;
+  const made = madeCount();
+  limitBox.className = `replica-count ${made >= REPLICA_LIMIT ? 'is-full' : ''}`;
   limitBox.innerHTML = `Создано <b>${made} / ${REPLICA_LIMIT}</b>`;
 }
 
@@ -183,13 +198,11 @@ document.addEventListener('click', e => {
   const replica = replicas[Number(toggleBtn.dataset.toggle)];
   if (!replica) return;
 
-  const wasMade = replica.made;
-  replica.made = !wasMade;
-  render();
+  // Развеять можно всегда, создать — только пока есть место.
+  if (!replica.made && madeCount() >= REPLICA_LIMIT) return;
 
-  if (!wasMade && replicas.filter(r => r.made).length > REPLICA_LIMIT) {
-    showNotice(`Предметов больше ${REPLICA_LIMIT}: самый старый исчезает`);
-  }
+  replica.made = !replica.made;
+  render();
 });
 
 render();
