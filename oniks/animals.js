@@ -7,12 +7,12 @@ const initialAnimals = [
     hp: "2",
     speed: "10 фт., полёт 50 фт.",
     stats: {
-      str: { value: 2, mod: "-4" },
-      dex: { value: 14, mod: "+2" },
-      con: { value: 10, mod: "+0" },
-      int: { value: 5, mod: "-3" },
-      wis: { value: 13, mod: "+1" },
-      cha: { value: 6, mod: "-2" }
+      str: { value: 2, mod: "-4", save: "-4" },
+      dex: { value: 14, mod: "+2", save: "+2" },
+      con: { value: 10, mod: "+0", save: "+0" },
+      int: { value: 5, mod: "-3", save: "-3" },
+      wis: { value: 13, mod: "+1", save: "+1" },
+      cha: { value: 6, mod: "-2", save: "-2" }
     },
     senses: "пассивное Восприятие 13",
     languages: "нет",
@@ -38,12 +38,12 @@ const initialAnimals = [
     hp: "2",
     speed: "40 фт., лазание 40 фт.",
     stats: {
-      str: { value: 3, mod: "-4" },
-      dex: { value: 15, mod: "+2" },
-      con: { value: 10, mod: "+0" },
-      int: { value: 3, mod: "-4" },
-      wis: { value: 12, mod: "+1" },
-      cha: { value: 7, mod: "-2" }
+      str: { value: 3, mod: "-4", save: "-4" },
+      dex: { value: 15, mod: "+2", save: "+4" },
+      con: { value: 10, mod: "+0", save: "+0" },
+      int: { value: 3, mod: "-4", save: "-4" },
+      wis: { value: 12, mod: "+1", save: "+1" },
+      cha: { value: 7, mod: "-2", save: "-2" }
     },
     senses: "Тёмное зрение 60 фт., пассивное Восприятие 13",
     languages: "нет",
@@ -69,12 +69,12 @@ const initialAnimals = [
     hp: "1",
     speed: "20 фт., лазание 20 фт.",
     stats: {
-      str: { value: 2, mod: "-4" },
-      dex: { value: 11, mod: "+0" },
-      con: { value: 9, mod: "-1" },
-      int: { value: 2, mod: "-4" },
-      wis: { value: 10, mod: "+0" },
-      cha: { value: 4, mod: "-3" }
+      str: { value: 2, mod: "-4", save: "-4" },
+      dex: { value: 11, mod: "+0", save: "+0" },
+      con: { value: 9, mod: "-1", save: "-1" },
+      int: { value: 2, mod: "-4", save: "-4" },
+      wis: { value: 10, mod: "+0", save: "+0" },
+      cha: { value: 4, mod: "-3", save: "-3" }
     },
     senses: "Тёмное зрение 30 фт., пассивное Восприятие 12",
     languages: "нет",
@@ -100,12 +100,12 @@ const initialAnimals = [
     hp: "1",
     speed: "30 фт., лазание 30 фт.",
     stats: {
-      str: { value: 3, mod: "-4" },
-      dex: { value: 16, mod: "+3" },
-      con: { value: 8, mod: "-1" },
-      int: { value: 2, mod: "-4" },
-      wis: { value: 12, mod: "+1" },
-      cha: { value: 3, mod: "-4" }
+      str: { value: 3, mod: "-4", save: "-4" },
+      dex: { value: 16, mod: "+3", save: "+3" },
+      con: { value: 8, mod: "-1", save: "-1" },
+      int: { value: 2, mod: "-4", save: "-4" },
+      wis: { value: 12, mod: "+1", save: "+1" },
+      cha: { value: 3, mod: "-4", save: "-4" }
     },
     senses: "Тёмное зрение 60 фт., пассивное Восприятие 13",
     languages: "нет",
@@ -125,12 +125,12 @@ const initialAnimals = [
     hp: "1",
     speed: "5 фт., полёт 30 фт.",
     stats: {
-      str: { value: 2, mod: "-4" },
-      dex: { value: 15, mod: "+2" },
-      con: { value: 8, mod: "-1" },
-      int: { value: 2, mod: "-4" },
-      wis: { value: 12, mod: "+1" },
-      cha: { value: 4, mod: "-3" }
+      str: { value: 2, mod: "-4", save: "-4" },
+      dex: { value: 15, mod: "+2", save: "+2" },
+      con: { value: 8, mod: "-1", save: "-1" },
+      int: { value: 2, mod: "-4", save: "-4" },
+      wis: { value: 12, mod: "+1", save: "+1" },
+      cha: { value: 4, mod: "-3", save: "-3" }
     },
     senses: "Слепое зрение 60 фт., пассивное Восприятие 11",
     languages: "нет",
@@ -150,12 +150,12 @@ const initialAnimals = [
     hp: "1",
     speed: "20 фт., плавание 20 фт.",
     stats: {
-      str: { value: 1, mod: "-5" },
-      dex: { value: 13, mod: "+1" },
-      con: { value: 8, mod: "-1" },
-      int: { value: 1, mod: "-5" },
-      wis: { value: 8, mod: "-1" },
-      cha: { value: 3, mod: "-4" }
+      str: { value: 1, mod: "-5", save: "-5" },
+      dex: { value: 13, mod: "+1", save: "+1" },
+      con: { value: 8, mod: "-1", save: "-1" },
+      int: { value: 1, mod: "-5", save: "-5" },
+      wis: { value: 8, mod: "-1", save: "-1" },
+      cha: { value: 3, mod: "-4", save: "-4" }
     },
     senses: "Тёмное зрение 30 фт., пассивное Восприятие 11",
     languages: "нет",
@@ -185,12 +185,12 @@ const initialAnimals = [
     hp: "3",
     speed: "5 фт., плавание 30 фт.",
     stats: {
-      str: { value: 4, mod: "-3" },
-      dex: { value: 15, mod: "+2" },
-      con: { value: 11, mod: "+0" },
-      int: { value: 3, mod: "-4" },
-      wis: { value: 10, mod: "+0" },
-      cha: { value: 4, mod: "-3" }
+      str: { value: 4, mod: "-3", save: "-3" },
+      dex: { value: 15, mod: "+2", save: "+2" },
+      con: { value: 11, mod: "+0", save: "+0" },
+      int: { value: 3, mod: "-4", save: "-4" },
+      wis: { value: 10, mod: "+0", save: "+0" },
+      cha: { value: 4, mod: "-3", save: "-3" }
     },
     senses: "Тёмное зрение 30 фт., пассивное Восприятие 12",
     languages: "нет",
@@ -226,12 +226,12 @@ const initialAnimals = [
     hp: "1",
     speed: "20 фт., лазание 20 фт.",
     stats: {
-      str: { value: 2, mod: "-4" },
-      dex: { value: 14, mod: "+2" },
-      con: { value: 8, mod: "-1" },
-      int: { value: 1, mod: "-5" },
-      wis: { value: 10, mod: "+0" },
-      cha: { value: 2, mod: "-4" }
+      str: { value: 2, mod: "-4", save: "-4" },
+      dex: { value: 14, mod: "+2", save: "+2" },
+      con: { value: 8, mod: "-1", save: "-1" },
+      int: { value: 1, mod: "-5", save: "-5" },
+      wis: { value: 10, mod: "+0", save: "+0" },
+      cha: { value: 2, mod: "-4", save: "-4" }
     },
     senses: "Тёмное зрение 30 фт., пассивное Восприятие 10",
     languages: "нет",
@@ -261,12 +261,12 @@ const initialAnimals = [
     hp: "1",
     speed: "5 фт., полёт 60 фт.",
     stats: {
-      str: { value: 3, mod: "-4" },
-      dex: { value: 13, mod: "+1" },
-      con: { value: 8, mod: "-1" },
-      int: { value: 2, mod: "-4" },
-      wis: { value: 12, mod: "+1" },
-      cha: { value: 7, mod: "-2" }
+      str: { value: 3, mod: "-4", save: "-4" },
+      dex: { value: 13, mod: "+1", save: "+1" },
+      con: { value: 8, mod: "-1", save: "-1" },
+      int: { value: 2, mod: "-4", save: "-4" },
+      wis: { value: 12, mod: "+1", save: "+1" },
+      cha: { value: 7, mod: "-2", save: "-2" }
     },
     senses: "Тёмное зрение 120 фт., пассивное Восприятие 15",
     languages: "нет",
@@ -292,12 +292,12 @@ const initialAnimals = [
     hp: "1",
     speed: "10 фт., полёт 60 фт.",
     stats: {
-      str: { value: 5, mod: "-3" },
-      dex: { value: 16, mod: "+3" },
-      con: { value: 8, mod: "-1" },
-      int: { value: 2, mod: "-4" },
-      wis: { value: 14, mod: "+2" },
-      cha: { value: 6, mod: "-2" }
+      str: { value: 5, mod: "-3", save: "-3" },
+      dex: { value: 16, mod: "+3", save: "+3" },
+      con: { value: 8, mod: "-1", save: "-1" },
+      int: { value: 2, mod: "-4", save: "-4" },
+      wis: { value: 14, mod: "+2", save: "+2" },
+      cha: { value: 6, mod: "-2", save: "-2" }
     },
     senses: "пассивное Восприятие 16",
     languages: "нет",
@@ -317,12 +317,12 @@ const initialAnimals = [
     hp: "2",
     speed: "20 фт., лазание 20 фт.",
     stats: {
-      str: { value: 2, mod: "-4" },
-      dex: { value: 11, mod: "+0" },
-      con: { value: 10, mod: "+0" },
-      int: { value: 1, mod: "-5" },
-      wis: { value: 8, mod: "-1" },
-      cha: { value: 3, mod: "-4" }
+      str: { value: 2, mod: "-4", save: "-4" },
+      dex: { value: 11, mod: "+0", save: "+0" },
+      con: { value: 10, mod: "+0", save: "+0" },
+      int: { value: 1, mod: "-5", save: "-5" },
+      wis: { value: 8, mod: "-1", save: "-1" },
+      cha: { value: 3, mod: "-4", save: "-4" }
     },
     senses: "Тёмное зрение 30 фт., пассивное Восприятие 9",
     languages: "нет",
@@ -351,12 +351,12 @@ const initialAnimals = [
     hp: "30 (только Могучий) или 20 (только Скрытный или Летучий) + 5 за каждый уровень заклинания выше 2-го",
     speed: "40 футов, Плавания 30 футов, Полёта 30 футов (парит; только Летучий)",
     stats: {
-      str: { value: 16, mod: "+3" },
-      dex: { value: 16, mod: "+3" },
-      con: { value: 12, mod: "+1" },
-      int: { value: 8, mod: "-1" },
-      wis: { value: 13, mod: "+1" },
-      cha: { value: 10, mod: "+0" }
+      str: { value: 16, mod: "+3", save: "+3" },
+      dex: { value: 16, mod: "+3", save: "+3" },
+      con: { value: 12, mod: "+1", save: "+1" },
+      int: { value: 8, mod: "-1", save: "-1" },
+      wis: { value: 13, mod: "+1", save: "+1" },
+      cha: { value: 10, mod: "+0", save: "+0" }
     },
     immunities: "Испуганный, Очарованный",
     senses: "пассивное Восприятие 11",
@@ -396,12 +396,12 @@ const initialAnimals = [
     hp: "30 + 10 за каждый уровень заклинания выше 4-го",
     speed: "40 футов, Полёта 40 футов (только оса), Лазания 40 футов",
     stats: {
-      str: { value: 17, mod: "+3" },
-      dex: { value: 13, mod: "+1" },
-      con: { value: 15, mod: "+2" },
-      int: { value: 4, mod: "-3" },
-      wis: { value: 14, mod: "+2" },
-      cha: { value: 3, mod: "-4" }
+      str: { value: 17, mod: "+3", save: "+3" },
+      dex: { value: 13, mod: "+1", save: "+1" },
+      con: { value: 15, mod: "+2", save: "+2" },
+      int: { value: 4, mod: "-3", save: "-3" },
+      wis: { value: 14, mod: "+2", save: "+2" },
+      cha: { value: 3, mod: "-4", save: "-4" }
     },
     senses: "Тёмное зрение 60 футов, пассивное Восприятие 12",
     languages: "понимает известные вам языки",
@@ -442,12 +442,12 @@ const initialAnimals = [
     hp: "50 + 10 за каждый уровень заклинания выше 4-го",
     speed: "40 футов, Плавания 40 футов (только Вода), Полёта 40 футов (парит; только Воздух), Копания 40 футов (только Земля)",
     stats: {
-      str: { value: 18, mod: "+4" },
-      dex: { value: 15, mod: "+2" },
-      con: { value: 17, mod: "+3" },
-      int: { value: 4, mod: "-3" },
-      wis: { value: 10, mod: "+0" },
-      cha: { value: 16, mod: "+3" }
+      str: { value: 18, mod: "+4", save: "+4" },
+      dex: { value: 15, mod: "+2", save: "+2" },
+      con: { value: 17, mod: "+3", save: "+3" },
+      int: { value: 4, mod: "-3", save: "-3" },
+      wis: { value: 10, mod: "+0", save: "+0" },
+      cha: { value: 16, mod: "+3", save: "+3" }
     },
     resistances: "Колющий (только Земля), Рубящий (только Земля), Звук (только Воздух), Кислота (только Вода), Электричество (только Воздух)",
     immunities: "Огонь (только Огонь), Яд; Истощение, Окаменевший, Отравленный, Парализованный",
@@ -479,12 +479,12 @@ const initialAnimals = [
     hp: "25 (10к4)",
     speed: "40 фт.",
     stats: {
-      str: { value: 5, mod: "-3" },
-      dex: { value: 17, mod: "+3" },
-      con: { value: 10, mod: "+0" },
-      int: { value: 7, mod: "-2" },
-      wis: { value: 10, mod: "+0" },
-      cha: { value: 10, mod: "+0" }
+      str: { value: 5, mod: "-3", save: "-3" },
+      dex: { value: 17, mod: "+3", save: "+3" },
+      con: { value: 10, mod: "+0", save: "+0" },
+      int: { value: 7, mod: "-2", save: "-2" },
+      wis: { value: 10, mod: "+0", save: "+0" },
+      cha: { value: 10, mod: "+0", save: "+0" }
     },
     skills: "Скрытность +5",
     resistances: "Огонь, Холод, Электричество",
@@ -526,12 +526,12 @@ const initialAnimals = [
     hp: "93 (11к10 + 33)",
     speed: "30 фт.",
     stats: {
-      str: { value: 16, mod: "+3" },
-      dex: { value: 12, mod: "+1" },
-      con: { value: 16, mod: "+3" },
-      int: { value: 6, mod: "-2" },
-      wis: { value: 6, mod: "-2" },
-      cha: { value: 7, mod: "-2" }
+      str: { value: 16, mod: "+3", save: "+3" },
+      dex: { value: 12, mod: "+1", save: "+1" },
+      con: { value: 16, mod: "+3", save: "+3" },
+      int: { value: 6, mod: "-2", save: "-2" },
+      wis: { value: 6, mod: "-2", save: "-2" },
+      cha: { value: 7, mod: "-2", save: "-2" }
     },
     skills: "Восприятие +1",
     resistances: "Звук, Кислота, Огонь, Холод, Электричество",

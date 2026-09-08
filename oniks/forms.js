@@ -46,10 +46,10 @@ const initialForms = [
     stats: {
       str: { value: 18, mod: "+4", save: "+6" },
       dex: { value: 17, mod: "+3", save: "+5" },
-      con: { value: 14, mod: "+2" },
-      int: { value: 3, mod: "-4" },
-      wis: { value: 12, mod: "+1" },
-      cha: { value: 8, mod: "-1" }
+      con: { value: 14, mod: "+2", save: "+2" },
+      int: { value: 3, mod: "-4", save: "-4" },
+      wis: { value: 12, mod: "+1", save: "+1" },
+      cha: { value: 8, mod: "-1", save: "-1" }
     },
     senses: "Тёмное зрение 60 футов, пассивное Восприятие 15",
     languages: "нет",
@@ -78,12 +78,12 @@ const initialForms = [
     initiative: "+2",
     speed: "5 футов, Плавания 40 футов",
     stats: {
-      str: { value: 18, mod: "+4" },
-      dex: { value: 14, mod: "+2" },
-      con: { value: 15, mod: "+2" },
-      int: { value: 1, mod: "-5" },
-      wis: { value: 10, mod: "+0" },
-      cha: { value: 4, mod: "-3" }
+      str: { value: 18, mod: "+4", save: "+4" },
+      dex: { value: 14, mod: "+2", save: "+2" },
+      con: { value: 15, mod: "+2", save: "+2" },
+      int: { value: 1, mod: "-5", save: "-5" },
+      wis: { value: 10, mod: "+0", save: "+0" },
+      cha: { value: 4, mod: "-3", save: "-3" }
     },
     senses: "пассивное Восприятие 12, Слепое зрение 60 футов",
     languages: "нет",
@@ -109,12 +109,12 @@ const initialForms = [
     speed: "30 футов, Плавания 30 футов",
     is_armor: true,
     stats: {
-      str: { value: 19, mod: "+4" },
-      dex: { value: 14, mod: "+2" },
-      con: { value: 12, mod: "+1" },
-      int: { value: 1, mod: "-5" },
-      wis: { value: 10, mod: "+0" },
-      cha: { value: 3, mod: "-4" }
+      str: { value: 19, mod: "+4", save: "+4" },
+      dex: { value: 14, mod: "+2", save: "+2" },
+      con: { value: 12, mod: "+1", save: "+1" },
+      int: { value: 1, mod: "-5", save: "-5" },
+      wis: { value: 10, mod: "+0", save: "+0" },
+      cha: { value: 3, mod: "-4", save: "-4" }
     },
     senses: "пассивное Восприятие 12, Слепое зрение 10 футов",
     languages: "нет",
@@ -141,12 +141,12 @@ const initialForms = [
     initiative: "+2",
     speed: "40 футов, Плавания 40 футов",
     stats: {
-      str: { value: 20, mod: "+5" },
-      dex: { value: 14, mod: "+2" },
-      con: { value: 16, mod: "+3" },
-      int: { value: 2, mod: "-4" },
-      wis: { value: 13, mod: "+1" },
-      cha: { value: 7, mod: "-2" }
+      str: { value: 20, mod: "+5", save: "+5" },
+      dex: { value: 14, mod: "+2", save: "+2" },
+      con: { value: 16, mod: "+3", save: "+3" },
+      int: { value: 2, mod: "-4", save: "-4" },
+      wis: { value: 13, mod: "+1", save: "+1" },
+      cha: { value: 7, mod: "-2", save: "-2" }
     },
     senses: "Тёмное зрение 60 футов, пассивное Восприятие 15",
     languages: "нет",
@@ -170,12 +170,12 @@ const initialForms = [
     speed: "60 футов",
     is_armor: true,
     stats: {
-      str: { value: 19, mod: "+4" },
-      dex: { value: 13, mod: "+1" },
-      con: { value: 17, mod: "+3" },
-      int: { value: 2, mod: "-4" },
-      wis: { value: 12, mod: "+1" },
-      cha: { value: 5, mod: "-3" }
+      str: { value: 19, mod: "+4", save: "+4" },
+      dex: { value: 13, mod: "+1", save: "+1" },
+      con: { value: 17, mod: "+3", save: "+3" },
+      int: { value: 2, mod: "-4", save: "-4" },
+      wis: { value: 12, mod: "+1", save: "+1" },
+      cha: { value: 5, mod: "-3", save: "-3" }
     },
     senses: "пассивное Восприятие 15",
     languages: "нет",
@@ -199,12 +199,12 @@ const initialForms = [
     speed: "30 футов, Лазания 30 футов",
     is_armor: true,
     stats: {
-      str: { value: 14, mod: "+2" },
-      dex: { value: 16, mod: "+3" },
-      con: { value: 12, mod: "+1" },
-      int: { value: 2, mod: "-4" },
-      wis: { value: 11, mod: "+0" },
-      cha: { value: 4, mod: "-3" }
+      str: { value: 14, mod: "+2", save: "+2" },
+      dex: { value: 16, mod: "+3", save: "+3" },
+      con: { value: 12, mod: "+1", save: "+1" },
+      int: { value: 2, mod: "-4", save: "-4" },
+      wis: { value: 11, mod: "+0", save: "+0" },
+      cha: { value: 4, mod: "-3", save: "-3" }
     },
     senses: "Тёмное зрение 60 футов, пассивное Восприятие 14",
     languages: "нет",
@@ -238,12 +238,12 @@ const initialForms = [
     speed: "60 футов",
     is_armor: true,
     stats: {
-      str: { value: 18, mod: "+4" },
-      dex: { value: 12, mod: "+1" },
-      con: { value: 13, mod: "+1" },
-      int: { value: 2, mod: "-4" },
+      str: { value: 18, mod: "+4", save: "+4" },
+      dex: { value: 12, mod: "+1", save: "+1" },
+      con: { value: 13, mod: "+1", save: "+1" },
+      int: { value: 2, mod: "-4", save: "-4" },
       wis: { value: 12, mod: "+1", save: "+3" },
-      cha: { value: 7, mod: "-2" }
+      cha: { value: 7, mod: "-2", save: "-2" }
     },
     senses: "пассивное Восприятие 11",
     languages: "нет",
@@ -262,12 +262,12 @@ const initialForms = [
     initiative: "+2",
     speed: "40 футов, Лазания 40 футов",
     stats: {
-      str: { value: 3, mod: "-4" },
-      dex: { value: 15, mod: "+2" },
-      con: { value: 10, mod: "+0" },
-      int: { value: 3, mod: "-4" },
-      wis: { value: 12, mod: "+1" },
-      cha: { value: 7, mod: "-2" }
+      str: { value: 3, mod: "-4", save: "-4" },
+      dex: { value: 15, mod: "+2", save: "+4" },
+      con: { value: 10, mod: "+0", save: "+0" },
+      int: { value: 3, mod: "-4", save: "-4" },
+      wis: { value: 12, mod: "+1", save: "+1" },
+      cha: { value: 7, mod: "-2", save: "-2" }
     },
     senses: "Тёмное зрение 60 футов, пассивное Восприятие 13",
     languages: "нет",
@@ -292,12 +292,12 @@ const initialForms = [
     initiative: "+2",
     speed: "30 фт., лазание 30 фт.",
     stats: {
-      str: { value: 5, mod: "-3" },
-      dex: { value: 14, mod: "+2" },
-      con: { value: 12, mod: "+1" },
-      int: { value: 1, mod: "-5" },
-      wis: { value: 7, mod: "-2" },
-      cha: { value: 3, mod: "-4" }
+      str: { value: 5, mod: "-3", save: "-3" },
+      dex: { value: 14, mod: "+2", save: "+2" },
+      con: { value: 12, mod: "+1", save: "+1" },
+      int: { value: 1, mod: "-5", save: "-5" },
+      wis: { value: 7, mod: "-2", save: "-2" },
+      cha: { value: 3, mod: "-4", save: "-4" }
     },
     senses: "Слепое зрение 30 фт., пассивное Восприятие 8",
     languages: "нет",
