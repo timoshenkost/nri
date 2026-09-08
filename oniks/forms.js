@@ -18,7 +18,7 @@ const initialForms = [
     immunities: "Отравленный",
     senses: "пассивное Восприятие 11",
     languages: "нет",
-    cr: "3 (БВ +2)",
+    cr: "3",
     actions: [
       {
         name: "Удар рогами",
@@ -55,7 +55,7 @@ const initialForms = [
     skills: "Восприятие +5, Скрытность +7",
     senses: "Тёмное зрение 60 футов, пассивное Восприятие 15",
     languages: "нет",
-    cr: "2 (БВ +2)",
+    cr: "2",
     traits: [
       {
         name: "Прыжок с разбега",
@@ -91,7 +91,7 @@ const initialForms = [
     skills: "Восприятие +2",
     senses: "пассивное Восприятие 12, Слепое зрение 60 футов",
     languages: "нет",
-    cr: "2 (БВ +2)",
+    cr: "2",
     traits: [
       {
         name: "Подводное дыхание",
@@ -124,7 +124,7 @@ const initialForms = [
     skills: "Восприятие +2",
     senses: "пассивное Восприятие 12, Слепое зрение 10 футов",
     languages: "нет",
-    cr: "2 (БВ +2)",
+    cr: "2",
     actions: [
       {
         name: "Мультиатака",
@@ -159,7 +159,7 @@ const initialForms = [
     resistances: "Холод",
     senses: "Тёмное зрение 60 футов, пассивное Восприятие 15",
     languages: "нет",
-    cr: "2 (БВ +2)",
+    cr: "2",
     actions: [
       {
         name: "Мультиатака",
@@ -190,7 +190,7 @@ const initialForms = [
     skills: "Восприятие +5",
     senses: "пассивное Восприятие 15",
     languages: "нет",
-    cr: "2 (БВ +2)",
+    cr: "2",
     actions: [
       {
         name: "Укус",
@@ -221,7 +221,7 @@ const initialForms = [
     skills: "Восприятие +4, Скрытность +7",
     senses: "Тёмное зрение 60 футов, пассивное Восприятие 14",
     languages: "нет",
-    cr: "1 (БВ +2)",
+    cr: "1",
     traits: [
       {
         name: "Паучье лазание",
@@ -261,7 +261,7 @@ const initialForms = [
     },
     senses: "пассивное Восприятие 11",
     languages: "нет",
-    cr: "1/2 (БВ +2)",
+    cr: "1/2",
     actions: [
       {
         name: "Копыта",
@@ -287,7 +287,7 @@ const initialForms = [
     skills: "Восприятие +3, Скрытность +4",
     senses: "Тёмное зрение 60 футов, пассивное Восприятие 13",
     languages: "нет",
-    cr: "0 (БВ +2)",
+    cr: "0",
     traits: [
       {
         name: "Прыгучая",
@@ -318,7 +318,7 @@ const initialForms = [
     },
     senses: "пассивное Восприятие 8, Слепое зрение 30 футов",
     languages: "нет",
-    cr: "1/4 (БВ +2)",
+    cr: "1/4",
     actions: [
       {
         name: "Укус",
