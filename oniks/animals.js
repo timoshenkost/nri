@@ -3,7 +3,7 @@ const initialAnimals = [
     name: "Ворон",
     size: "Крошечный",
     ac: "12",
-    initiative: "+2",
+    initiative: "+2 (12)",
     hp: "2",
     speed: "10 фт., полёт 50 фт.",
     stats: {
@@ -34,7 +34,7 @@ const initialAnimals = [
     name: "Кошка",
     size: "Крошечный",
     ac: "12",
-    initiative: "+2",
+    initiative: "+2 (12)",
     hp: "2",
     speed: "40 фт., лазание 40 фт.",
     stats: {
@@ -65,7 +65,7 @@ const initialAnimals = [
     name: "Крыса",
     size: "Крошечный",
     ac: "10",
-    initiative: "+0",
+    initiative: "+0 (10)",
     hp: "1",
     speed: "20 фт., лазание 20 фт.",
     stats: {
@@ -96,7 +96,7 @@ const initialAnimals = [
     name: "Куница",
     size: "Крошечный",
     ac: "13",
-    initiative: "+3",
+    initiative: "+3 (13)",
     hp: "1",
     speed: "30 фт., лазание 30 фт.",
     stats: {
@@ -121,7 +121,7 @@ const initialAnimals = [
     name: "Летучая мышь",
     size: "Крошечный",
     ac: "12",
-    initiative: "+2",
+    initiative: "+2 (12)",
     hp: "1",
     speed: "5 фт., полёт 30 фт.",
     stats: {
@@ -146,7 +146,7 @@ const initialAnimals = [
     name: "Лягушка",
     size: "Крошечный",
     ac: "11",
-    initiative: "+1",
+    initiative: "+1 (11)",
     hp: "1",
     speed: "20 фт., плавание 20 фт.",
     stats: {
@@ -181,7 +181,7 @@ const initialAnimals = [
     name: "Осьминог",
     size: "Маленький",
     ac: "12",
-    initiative: "+2",
+    initiative: "+2 (12)",
     hp: "3",
     speed: "5 фт., плавание 30 фт.",
     stats: {
@@ -222,7 +222,7 @@ const initialAnimals = [
     name: "Паук",
     size: "Крошечный",
     ac: "12",
-    initiative: "+2",
+    initiative: "+2 (12)",
     hp: "1",
     speed: "20 фт., лазание 20 фт.",
     stats: {
@@ -257,7 +257,7 @@ const initialAnimals = [
     name: "Сова",
     size: "Крошечный",
     ac: "11",
-    initiative: "+1",
+    initiative: "+1 (11)",
     hp: "1",
     speed: "5 фт., полёт 60 фт.",
     stats: {
@@ -288,7 +288,7 @@ const initialAnimals = [
     name: "Ястреб",
     size: "Крошечный",
     ac: "13",
-    initiative: "+3",
+    initiative: "+3 (13)",
     hp: "1",
     speed: "10 фт., полёт 60 фт.",
     stats: {
@@ -313,7 +313,7 @@ const initialAnimals = [
     name: "Ящерица",
     size: "Крошечный",
     ac: "10",
-    initiative: "+0",
+    initiative: "+0 (10)",
     hp: "2",
     speed: "20 фт., лазание 20 фт.",
     stats: {
@@ -474,8 +474,9 @@ const initialAnimals = [
   {
     name: "Квазит",
     size: "Крошечное",
+    type: "Исчадие (Демон)",
     ac: "13",
-    initiative: "+3",
+    initiative: "+3 (13)",
     hp: "25 (10к4)",
     speed: "40 фт.",
     stats: {
@@ -488,7 +489,7 @@ const initialAnimals = [
     },
     skills: "Скрытность +5",
     resistances: "Огонь, Холод, Электричество",
-    immunities: "Яд, состояние Отравленный",
+    immunities: "Яд; Отравленный",
     senses: "Тёмное зрение 120 футов, пассивное Восприятие 10",
     languages: "Общий, Бездны",
     cr: "1 (200 опыта; БВ +2)",
@@ -522,7 +523,7 @@ const initialAnimals = [
     size: "Большой",
     type: "Аберрация",
     ac: "14",
-    initiative: "+1",
+    initiative: "+1 (11)",
     hp: "93 (11к10 + 33)",
     speed: "30 фт.",
     stats: {

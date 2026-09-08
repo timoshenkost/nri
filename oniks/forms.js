@@ -4,7 +4,7 @@ const initialForms = [
     size: "Большой",
     type: "конструкт",
     ac: "20",
-    initiative: "+1",
+    initiative: "+1 (11)",
     speed: "40 фт.",
     stats: {
       str: { value: 20, mod: "+5", save: "+5" },
@@ -15,7 +15,7 @@ const initialForms = [
       cha: { value: 7, mod: "-2", save: "-2" }
     },
     resistances: "Яд",
-    immunities: "Отравление",
+    immunities: "Отравленный",
     senses: "пассивное Восприятие 11",
     languages: "нет",
     cr: "3",
@@ -40,7 +40,7 @@ const initialForms = [
     name: "Саблезубый тигр",
     size: "Большой",
     ac: "13",
-    initiative: "+3",
+    initiative: "+3 (13)",
     speed: "40 фт.",
     is_armor: true,
     stats: {
@@ -75,7 +75,7 @@ const initialForms = [
     name: "Охотничья акула",
     size: "Большой",
     ac: "12",
-    initiative: "+2",
+    initiative: "+2 (12)",
     speed: "5 футов, Плавания 40 футов",
     stats: {
       str: { value: 18, mod: "+4", save: "+4" },
@@ -105,7 +105,7 @@ const initialForms = [
     name: "Гигантский удав",
     size: "Огромный",
     ac: "12",
-    initiative: "+2",
+    initiative: "+2 (12)",
     speed: "30 футов, Плавания 30 футов",
     is_armor: true,
     stats: {
@@ -138,7 +138,7 @@ const initialForms = [
     name: "Белый медведь",
     size: "Большой",
     ac: "12",
-    initiative: "+2",
+    initiative: "+2 (12)",
     speed: "40 футов, Плавания 40 футов",
     stats: {
       str: { value: 20, mod: "+5", save: "+5" },
@@ -166,7 +166,7 @@ const initialForms = [
     name: "Аллозавр",
     size: "Большой",
     ac: "13",
-    initiative: "+1",
+    initiative: "+1 (11)",
     speed: "60 футов",
     is_armor: true,
     stats: {
@@ -195,7 +195,7 @@ const initialForms = [
     name: "Гигантский паук",
     size: "Большой",
     ac: "14",
-    initiative: "+3",
+    initiative: "+3 (13)",
     speed: "30 футов, Лазания 30 футов",
     is_armor: true,
     stats: {
@@ -234,7 +234,7 @@ const initialForms = [
     name: "Боевой конь",
     size: "Большой",
     ac: "11",
-    initiative: "+1",
+    initiative: "+1 (11)",
     speed: "60 футов",
     is_armor: true,
     stats: {
@@ -259,7 +259,7 @@ const initialForms = [
     name: "Кошка",
     size: "Крошечный",
     ac: "12",
-    initiative: "+2",
+    initiative: "+2 (12)",
     speed: "40 футов, Лазания 40 футов",
     stats: {
       str: { value: 3, mod: "-4", save: "-4" },
@@ -289,7 +289,7 @@ const initialForms = [
     name: "Гигантская многоножка",
     size: "Маленький",
     ac: "14",
-    initiative: "+2",
+    initiative: "+2 (12)",
     speed: "30 фт., лазание 30 фт.",
     stats: {
       str: { value: 5, mod: "-3", save: "-3" },
