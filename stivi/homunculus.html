@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#1a1a1a">
+<title>Гомункул</title>
+
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="../common/common.css">
+<link rel="stylesheet" href="../common/creature.css">
+
+<script src="character.js"></script>
+<script src="../common/common.js"></script>
+<script src="schemes.js"></script>
+<script src="homunculus.js"></script>
+<script src="../common/render_creature.js"></script>
+
+<style>
+  /* Шапка со счётчиками. Такая же полоса, как в книге заклинаний, но
+     spellbook.css сюда тянуть не за чем — там всё остальное про заклинания. */
+  .panel {
+    background: var(--inset);
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .level-row { gap: 6px; }
+
+  .level-btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
+
+  .level-btn.is-current {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent-light);
+    font-weight: bold;
+  }
+
+  /* Хиты кончились — карточка гаснет; осталась треть — цифра краснеет. */
+  .resource-item.is-hurt .resource-count { color: var(--hp-red); }
+
+  .upgrade {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+
+  .upgrade.is-on {
+    border-color: var(--accent-light);
+    background: var(--card-open);
+  }
+
+  .upgrade input { margin-top: 2px; accent-color: var(--accent); }
+  .upgrade b { color: var(--accent-light); }
+  .upgrade.is-on b { color: var(--gold); }
+
+  .upgrade-effect {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .upgrade.is-on .upgrade-effect { color: var(--text); opacity: 0.8; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🤖 Гомункул</h1>
+</header>
+
+<section class="panel">
+  <div class="resource-row" id="panel"></div>
+  <button id="resummon" class="btn-base btn-quiet" type="button">Призвать заново</button>
+</section>
+
+<main>
+  <div id="card"></div>
+
+  <div class="section-header">Улучшения</div>
+  <div id="upgrades"></div>
+</main>
+
+<script>
+/* Заклинание второго круга, ниже его не наложить. Список кругов растёт сам
+   вместе с ячейками в character.js — руками сюда лазить не придётся. */
+const LEVELS = Object.keys(CHARACTER.slots || {})
+  .map(Number)
+  .filter(level => level >= 2)
+  .sort((a, b) => a - b);
+if (!LEVELS.length) LEVELS.push(2);
+
+/* Улучшения берём из «Схем», чтобы название и эффект жили в одном месте.
+   Опознаём по наличию поля homunculus, а не по строке type: тип написан
+   для человека и вполне может поменяться. */
+const UPGRADES = Object.values(initialRecipes)
+  .reduce((all, group) => all.concat(group), [])
+  .filter(recipe => recipe.homunculus);
+
+/* Галочка «стоит на гомункуле» — состояние только этой страницы. Из «Схем»
+   его не вывести: там done значит «рецепт известен», а набранные очки
+   работы — «сделан один экземпляр», и то и другое сбрасывается отдельно. */
+const LEVEL_KEY = 'homunculus_level';
+const MODS_KEY = 'homunculus_mods';
+const HP_KEY = 'homunculus_hp';
+
+let level = Number(Store.get(LEVEL_KEY, LEVELS[0]));
+if (!LEVELS.includes(level)) level = LEVELS[0];
+
+let installed = Store.get(MODS_KEY, []);
+if (!Array.isArray(installed)) installed = [];
+
+const panel = document.getElementById('panel');
+const card = document.getElementById('card');
+const upgradeList = document.getElementById('upgrades');
+
+function mods() {
+  return UPGRADES
+    .filter(upgrade => installed.includes(upgrade.id))
+    .map(upgrade => upgrade.homunculus);
+}
+
+function sum(key) {
+  return mods().reduce((total, mod) => total + (Number(mod[key]) || 0), 0);
+}
+
+function maxHP() {
+  return homunculusHP(level) + sum('hp');
+}
+
+let hp = Number(Store.get(HP_KEY, maxHP()));
+if (!Number.isFinite(hp)) hp = maxHP();
+
+// Круг заклинания записан в данных как {ур} — подставляем число.
+function fill(text) {
+  return String(text).replace(/\{ур\}/g, level);
+}
+
+function creature() {
+  const extra = key => mods().reduce((all, mod) => all.concat(mod[key] || []), []);
+  const withLevel = list => list.map(item => ({ name: item.name, desc: fill(item.desc) }));
+
+  return Object.assign({}, homunculusBase, {
+    ac: String(homunculusBase.ac + sum('ac')),
+    hp: `${maxHP()} (Кости хитов ${level}к4)`,
+    resistances: mods().map(mod => mod.resistances).filter(Boolean).join(', '),
+    traits: withLevel(homunculusBase.traits.concat(extra('traits'))),
+    actions: withLevel(homunculusBase.actions.concat(extra('actions'))),
+    reactions: withLevel(homunculusBase.reactions)
+  });
+}
+
+/* Короткая строчка «что даёт» — собирается из самой прибавки, поэтому не
+   разъедется с блоком статистики. */
+function summary(upgrade) {
+  const mod = upgrade.homunculus;
+  const parts = [];
+  if (mod.ac) parts.push(`+${mod.ac} КЗ`);
+  if (mod.hp) parts.push(`+${mod.hp} хитов`);
+  if (mod.resistances) parts.push(`сопротивление: ${mod.resistances}`);
+  (mod.traits || []).forEach(trait => parts.push(trait.name));
+  (mod.actions || []).forEach(action => parts.push(action.name));
+  return parts.join(' · ');
+}
+
+function render() {
+  const max = maxHP();
+  hp = Math.max(0, Math.min(hp, max));
+  Store.set(HP_KEY, hp);
+
+  const state = hp === 0 ? 'is-empty' : (hp * 3 <= max ? 'is-hurt' : '');
+
+  panel.innerHTML = `
+    <div class="resource-item">
+      <span class="resource-name">Круг заклинания</span>
+      <div class="resource-controls level-row">
+        ${LEVELS.map(value => `
+          <button class="btn-base level-btn ${value === level ? 'is-current' : ''}"
+                  type="button" data-level="${value}"
+                  aria-label="Наложить ${value} кругом">${value}</button>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="resource-item ${state}">
+      <span class="resource-name">Хиты</span>
+      <div class="resource-controls">
+        <button class="btn-base resource-btn" type="button"
+                data-hp="-5" aria-label="Урон 5">−5</button>
+        <button class="btn-base resource-btn" type="button"
+                data-hp="-1" aria-label="Урон 1">−</button>
+        <span class="resource-count">${hp}/${max}</span>
+        <button class="btn-base resource-btn" type="button"
+                data-hp="1" aria-label="Вылечить 1">+</button>
+        <button class="btn-base resource-btn" type="button"
+                data-hp="5" aria-label="Вылечить 5">+5</button>
+      </div>
+    </div>
+  `;
+
+  card.innerHTML = `
+    <details class="creature" open>
+      <summary>
+        <span>${esc(homunculusBase.name)} <span class="size">${esc(homunculusBase.size)}</span></span>
+      </summary>
+      ${renderCreatureBody(creature())}
+    </details>
+  `;
+
+  upgradeList.innerHTML = UPGRADES.map(upgrade => {
+    const on = installed.includes(upgrade.id);
+    return `
+      <label class="upgrade ${on ? 'is-on' : ''}">
+        <input type="checkbox" data-upgrade="${esc(upgrade.id)}" ${on ? 'checked' : ''}>
+        <span>
+          <b>${esc(upgrade.name)}</b>
+          <span class="upgrade-effect">${esc(summary(upgrade))}</span>
+        </span>
+      </label>
+    `;
+  }).join('');
+}
+
+/* Полные хиты остаются полными: подняли круг или воткнули имплант — запас
+   вырос целиком, а не оставил гомункула раненым на ровном месте. */
+function keepFull(change) {
+  const wasFull = hp >= maxHP();
+  change();
+  if (wasFull) hp = maxHP();
+  render();
+}
+
+document.addEventListener('click', event => {
+  const levelBtn = event.target.closest('[data-level]');
+  if (levelBtn) {
+    keepFull(() => {
+      level = Number(levelBtn.dataset.level);
+      Store.set(LEVEL_KEY, level);
+    });
+    return;
+  }
+
+  const hpBtn = event.target.closest('[data-hp]');
+  if (hpBtn) {
+    hp += Number(hpBtn.dataset.hp);
+    render();
+    return;
+  }
+
+  if (event.target.closest('#resummon')) {
+    hp = maxHP();
+    render();
+    showNotice('Гомункул призван заново');
+  }
+});
+
+document.addEventListener('change', event => {
+  const box = event.target.closest('[data-upgrade]');
+  if (!box) return;
+
+  const id = box.dataset.upgrade;
+  keepFull(() => {
+    installed = box.checked
+      ? installed.concat([id])
+      : installed.filter(other => other !== id);
+    Store.set(MODS_KEY, installed);
+  });
+  showNotice(box.checked ? 'Улучшение установлено' : 'Улучшение снято');
+});
+
+render();
+</script>
+
+</body>
+</html>

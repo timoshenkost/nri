@@ -1,6 +1,7 @@
-/* Отрисовка статблока существа. Используется и вкладкой «Существа», и
-   вкладкой «Облики», поэтому наружу отдаётся только ТЕЛО карточки —
-   обёртку <details> с нужным summary каждая страница строит сама. */
+/* Отрисовка статблока существа. Используется вкладками «Существа» и
+   «Облики» Ониксы и вкладкой «Гомункул» Стиви, поэтому наружу отдаётся
+   только ТЕЛО карточки — обёртку <details> с нужным summary каждая
+   страница строит сама. */
 
 /* Хиты необязательны: у дикого облика их не считают, поэтому в forms.js
    этого поля нет и ячейка просто не рисуется. У животных она остаётся. */
@@ -59,6 +60,7 @@ function renderCreatureBody(creature) {
       ${block('Особенности', creature.traits)}
       ${block('Действия', creature.actions)}
       ${block('Бонусные действия', creature.bonusActions)}
+      ${block('Реакции', creature.reactions)}
     </div>
   `;
 }
@@ -69,6 +71,7 @@ function creatureHaystack(creature) {
   return [
     creature.name, creature.size, creature.type, creature.senses, creature.skills,
     creature.resistances, creature.immunities, creature.languages,
-    names(creature.traits), names(creature.actions), names(creature.bonusActions)
+    names(creature.traits), names(creature.actions), names(creature.bonusActions),
+    names(creature.reactions)
   ].filter(Boolean).join(' ').toLowerCase();
 }
