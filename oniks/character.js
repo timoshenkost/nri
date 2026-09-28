@@ -54,7 +54,7 @@ const CHARACTER = {
   legacyOrigin: 'timoshenkost.github.io',
 
   tabs: [
-    { id: 'spells-tab',  file: 'spells_book.html', icon: '📜', title: 'Книга',    label: 'Книга' },
+    { id: 'spells-tab',  file: 'spells_book.html', icon: '🌙', title: 'Руны',     label: 'Руны' },
     { id: 'forms-tab',   file: 'forms.html',       icon: '🐻', title: 'Облики',   label: 'Облики' },
     { id: 'animals-tab', file: 'animals.html',     icon: '🐾', title: 'Существа', label: 'Существа' },
   ],

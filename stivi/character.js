@@ -51,7 +51,7 @@ const CHARACTER = {
   legacyOrigin: '',
 
   tabs: [
-    { id: 'spells-tab',   file: 'spells_book.html', icon: '⚙',  title: 'Заклинания' },
+    { id: 'spells-tab',   file: 'spells_book.html', icon: '⚙',  title: 'Изобретения и магия' },
     { id: 'tools-tab',    file: 'tools.html',       icon: '🛠', title: 'Инструменты' },
     { id: 'schemes-tab',  file: 'schemes.html',     icon: '📜', title: 'Схемы' },
     { id: 'stuff-tab',    file: 'stuff.html',       icon: '🎒', title: 'Магия вещей' },
