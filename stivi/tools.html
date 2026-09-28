@@ -15,15 +15,12 @@
 <script src="tools.js"></script>
 
 <style>
-  .meta-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 15px;
-  }
+  .tool-stat { margin-bottom: 15px; }
 
-  @media (max-width: 480px) {
-    .meta-grid { grid-template-columns: 1fr; }
+  .craft {
+    margin-top: 12px;
+    font-size: 0.85rem;
+    line-height: 1.4;
   }
 </style>
 </head>
@@ -35,7 +32,7 @@
 
 <main>
   <input id="search" class="search-input" type="search"
-         placeholder="Поиск по названию, действию или отыгрышу…"
+         placeholder="Поиск по названию, действию или изделию…"
          aria-label="Поиск по инструментам">
 
   <div id="app"></div>
@@ -49,7 +46,7 @@ function renderTool(tool, category) {
   const haystack = [
     tool.name,
     tool.stat,
-    tool.roleplay,
+    tool.craft,
     ...tool.actions.map(a => a[0])
   ].join(" ").toLowerCase();
 
@@ -57,10 +54,7 @@ function renderTool(tool, category) {
     <details class="tool" data-key="${esc(category + "|" + tool.name)}" data-search="${esc(haystack)}">
       <summary>${esc(tool.name)}</summary>
       <div class="content">
-        <div class="meta-grid">
-          ${tool.stat ? `<div><span class="label">Характеристика</span> ${esc(tool.stat)}</div>` : ""}
-          ${tool.roleplay ? `<div><span class="label">Отыгрыш</span> ${esc(tool.roleplay)}</div>` : ""}
-        </div>
+        ${tool.stat ? `<div class="tool-stat"><span class="label">Характеристика</span> ${esc(tool.stat)}</div>` : ""}
 
         <table>
           <thead>
@@ -78,12 +72,14 @@ function renderTool(tool, category) {
             `).join("")}
           </tbody>
         </table>
+
+        ${tool.craft ? `<div class="craft"><span class="label">Изготовление</span> ${esc(tool.craft)}</div>` : ""}
       </div>
     </details>
   `;
 }
 
-app.innerHTML = groupByTags(initialTools, toolCategories).map(([category, tools]) => `
+app.innerHTML = groupByTags(initialTools.filter(tool => !tool.hidden), toolCategories).map(([category, tools]) => `
   <div class="group">
     <div class="section-header">${esc(category)}</div>
     ${tools.map(tool => renderTool(tool, category)).join("")}
