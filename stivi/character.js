@@ -40,7 +40,7 @@ const CHARACTER = {
 
   // Ключи, которые есть только у этого листа — попадут в экспорт.
   extraSaveKeys: ['schemes', 'scheme_resources', 'scheme_conditions', 'daily_creation_state',
-                  'prepared_replicas_data',
+                  'prepared_replicas_data', 'replica_charges',
                   'homunculus_level', 'homunculus_mods',
                   'homunculus_hp', 'homunculus_temp_hp'],
 

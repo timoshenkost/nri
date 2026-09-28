@@ -45,6 +45,78 @@
   }
 
   .replica-table { margin-top: 12px; }
+
+  /* Заряды — одна строка внизу карточки, отделённая чертой. */
+  .charges {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 12px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .charges-label {
+    color: var(--accent-light);
+    font-size: 0.7rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    opacity: 0.75;
+  }
+
+  .charge-pips { display: flex; gap: 6px; }
+
+  .charge-pip {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .charge-pip.is-on {
+    background: var(--gold);
+    border-color: var(--gold);
+    box-shadow: 0 0 6px rgba(255, 179, 0, 0.45);
+  }
+
+  .charge-count {
+    font-family: var(--font-mono);
+    font-weight: bold;
+    color: var(--gold);
+  }
+
+  .charge-dawn {
+    margin-left: auto;
+    background: none;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .charge-dawn:hover { border-color: var(--accent); color: var(--accent-light); }
+
+  .charge-badge {
+    margin-left: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--gold);
+    opacity: 0.8;
+  }
+
+  .charge-badge.is-empty { color: var(--muted); }
 </style>
 </head>
 <body>
@@ -91,6 +163,93 @@ function save() {
   Store.set(STORAGE_KEY, replicas.filter(r => r.made).map(r => r.name));
 }
 
+/* Заряды созданных предметов, по имени. Нет записи — предмет полный:
+   так только что созданная реплика сразу с полным запасом. */
+const CHARGES_KEY = 'replica_charges';
+let chargeData = Store.get(CHARGES_KEY, {});
+if (!chargeData || typeof chargeData !== 'object') chargeData = {};
+
+function chargesOf(replica) {
+  const max = replica.charges.max;
+  const saved = Number(chargeData[replica.name]);
+  return Number.isFinite(saved) ? Math.max(0, Math.min(saved, max)) : max;
+}
+
+function setCharges(replica, value) {
+  chargeData[replica.name] = Math.max(0, Math.min(value, replica.charges.max));
+  Store.set(CHARGES_KEY, chargeData);
+}
+
+// Развеянный предмет забывает заряды: новая реплика будет полной.
+function forgetCharges(replica) {
+  delete chargeData[replica.name];
+  Store.set(CHARGES_KEY, chargeData);
+}
+
+/* Строка зарядов внизу карточки: кружки, число и кнопка рассвета.
+   Кружки — как трекер дикого облика у Ониксы: горящий гасим, погасший
+   зажигаем. Заряды тратятся справа налево, поэтому нажатие на i-й
+   кружок задаёт остаток напрямую — три заряда разом это три клика
+   или один клик на нужный кружок. */
+function chargesHTML(replica, index) {
+  if (!replica.charges || !replica.made) return '';
+  const current = chargesOf(replica);
+  const { max, dawn: dice } = replica.charges;
+
+  const pips = Array.from({ length: max }, (_, i) => `
+    <button class="charge-pip ${i < current ? 'is-on' : ''}" type="button"
+            data-charge="${index}" data-pip="${i}"
+            aria-label="${i < current ? 'Потратить заряд' : 'Вернуть заряд'}"></button>
+  `).join('');
+
+  return `
+    <div class="charges">
+      <span class="charges-label">Заряды</span>
+      <span class="charge-pips">${pips}</span>
+      <span class="charge-count">${current}/${max}</span>
+      <button class="charge-dawn" type="button" data-dawn="${index}"
+              title="${dice ? `На рассвете восстанавливается ${esc(dice)}` : 'На рассвете восстанавливаются все заряды'}">
+        Рассвет${dice ? ` +${esc(dice)}` : ''}
+      </button>
+    </div>
+  `;
+}
+
+function clickPip(replica, pip) {
+  const before = chargesOf(replica);
+  setCharges(replica, pip < before ? pip : pip + 1);
+  if (chargesOf(replica) === 0 && before > 0 && replica.charges.onEmpty) {
+    showNotice(replica.charges.onEmpty);
+  }
+  render();
+}
+
+/* Рассвет у каждого предмета свой: одни возвращают всё, другие —
+   сколько выпадет на кубиках. Бросок делают за столом, сюда вводят итог. */
+function dawn(replica) {
+  const { max, dawn: dice } = replica.charges;
+  if (!dice) {
+    setCharges(replica, max);
+    showNotice(`${replica.name}: заряды восстановлены`);
+    render();
+    return;
+  }
+  Modal.prompt({
+    title: `Рассвет · ${replica.name}`,
+    text: `Восстанавливается ${dice}. Сколько выпало?`,
+    value: '',
+    confirmText: 'Восстановить',
+    onConfirm: value => {
+      const n = positiveAmount(value);
+      if (!n) return;
+      const before = chargesOf(replica);
+      setCharges(replica, before + n);
+      showNotice(`+${chargesOf(replica) - before} зарядов: ${chargesOf(replica)}/${max}`);
+      render();
+    }
+  });
+}
+
 function tableHTML(table) {
   if (!table) return '';
   return `
@@ -116,6 +275,12 @@ function replicaCardHTML(replica, index) {
     ? `<span class="badge badge-attunement" title="${esc(replica.attunementNote || 'Требуется настройка')}">Н</span>`
     : '';
 
+  // Остаток зарядов виден и у свёрнутой карточки.
+  const chargeBadge = replica.charges && replica.made
+    ? `<span class="charge-badge ${chargesOf(replica) === 0 ? 'is-empty' : ''}"
+             title="Заряды">${chargesOf(replica)}/${replica.charges.max}</span>`
+    : '';
+
   const haystack = [
     replica.name, replica.type, replica.description,
     replica.attunement ? 'настройка' : '',
@@ -125,7 +290,7 @@ function replicaCardHTML(replica, index) {
   return `
     <details data-key="${esc(replica.name)}" data-search="${esc(haystack)}">
       <summary>
-        <span class="spell-title"><span class="spell-name">${esc(replica.name)}</span>${attunement}</span>
+        <span class="spell-title"><span class="spell-name">${esc(replica.name)}</span>${attunement}${chargeBadge}</span>
         <span class="action-group">
           <button class="btn-base move-btn" type="button" data-toggle="${index}"
                   ${blocked ? 'disabled' : ''}
@@ -142,6 +307,7 @@ function replicaCardHTML(replica, index) {
         </div>
         <p style="white-space: pre-line;">${esc(replica.description)}</p>
         ${tableHTML(replica.table)}
+        ${chargesHTML(replica, index)}
       </div>
     </details>
   `;
@@ -180,6 +346,20 @@ function render() {
 }
 
 document.addEventListener('click', e => {
+  const chargeBtn = e.target.closest('[data-charge]');
+  if (chargeBtn) {
+    const replica = replicas[Number(chargeBtn.dataset.charge)];
+    if (replica) clickPip(replica, Number(chargeBtn.dataset.pip));
+    return;
+  }
+
+  const dawnBtn = e.target.closest('[data-dawn]');
+  if (dawnBtn) {
+    const replica = replicas[Number(dawnBtn.dataset.dawn)];
+    if (replica) dawn(replica);
+    return;
+  }
+
   const toggleBtn = e.target.closest('[data-toggle]');
   if (!toggleBtn) return;
 
@@ -193,6 +373,7 @@ document.addEventListener('click', e => {
   if (!replica.made && madeCount() >= REPLICA_LIMIT) return;
 
   replica.made = !replica.made;
+  if (replica.charges) forgetCharges(replica);
   render();
 });
 
