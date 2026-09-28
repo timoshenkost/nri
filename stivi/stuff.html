@@ -68,10 +68,8 @@
 </header>
 
 <section class="counter-section">
-    <div class="counter-display">Создано сегодня: <span id="count-val">0</span> / 5</div>
-    <div class="counter-bar" id="counter-dots">
-        <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
-    </div>
+    <div class="counter-display">Создано сегодня: <span id="count-val">0</span> / <span id="count-max"></span></div>
+    <div class="counter-bar" id="counter-dots"></div>
     <div class="made-list" id="made-list"></div>
     <button class="btn-base btn-quiet is-danger" id="reset-btn" type="button">Сбросить прогресс</button>
 </section>
@@ -87,7 +85,11 @@
 
 <script>
 const STORAGE_KEY = 'daily_creation_state';
-const MAX_ITEMS = 5;
+const MAX_ITEMS = CHARACTER.dailyItems;
+
+// Лимит живёт в character.js — счётчик и точки строятся из него.
+document.getElementById('count-max').textContent = MAX_ITEMS;
+document.getElementById('counter-dots').innerHTML = '<div class="dot"></div>'.repeat(MAX_ITEMS);
 
 function today() { return new Date().toDateString(); }
 

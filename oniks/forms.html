@@ -92,10 +92,10 @@
 </main>
 
 <script>
-const DRUID_STATS = { int: 8, wis: 18, cha: 12 };
+const DRUID_STATS = CHARACTER.wildShape.stats;
 
 /* Заряды дикого облика — обычный ресурс до отдыха, как ячейки. */
-const shapeDefs = { wildshape: { name: 'Дикий облик', short: 'Облики', max: 3 } };
+const shapeDefs = { wildshape: { name: 'Дикий облик', short: 'Облики', max: CHARACTER.wildShape.uses } };
 let shapeSlots = Resources.merge(shapeDefs, Store.get('wild_shape_slots', null));
 
 const forms = initialForms.map(f => ({ ...f, prepared: false }));
@@ -114,6 +114,7 @@ function save() {
 }
 
 function toModStr(val) { return val >= 0 ? `+${val}` : `${val}`; }
+function abilityMod(value) { return Math.floor((value - 10) / 2); }
 
 /* Облик получает ментальные характеристики друида, КД 13 + Мудрость и
    бонус к спасброску Телосложения. */
@@ -123,7 +124,7 @@ function applyDruidBuffs(original) {
   ['int', 'wis', 'cha'].forEach(statKey => {
     if (c.stats[statKey].value < DRUID_STATS[statKey]) {
       const oldMod = parseInt(c.stats[statKey].mod, 10);
-      const newMod = Math.floor((DRUID_STATS[statKey] - 10) / 2);
+      const newMod = abilityMod(DRUID_STATS[statKey]);
       const modDiff = newMod - oldMod;
 
       c.stats[statKey].value = DRUID_STATS[statKey];
@@ -141,7 +142,7 @@ function applyDruidBuffs(original) {
     c.ac = String(c.is_armor === true ? druidAC + 1 : druidAC);
   }
 
-  const druidWisBonus = 4;
+  const druidWisBonus = abilityMod(DRUID_STATS.wis);
   const baseConMod = parseInt(c.stats.con.mod, 10);
   const currentConSave = c.stats.con.save ? parseInt(c.stats.con.save, 10) : baseConMod;
   c.stats.con.save = toModStr(currentConSave + druidWisBonus);
