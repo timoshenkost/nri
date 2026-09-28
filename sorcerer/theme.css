@@ -1,0 +1,52 @@
+/* Тема чародея — аберрантный разум: бирюзовое свечение Дальнего Предела,
+   глубокая морская темнота. */
+
+:root {
+  --page-bg: radial-gradient(circle at 50% 0%, #0f2a2c, #061213 80%);
+
+  --surface: #0a1c1e;
+  --card: #0f2426;
+  --card-open: #153033;
+  --inset: rgba(0, 0, 0, 0.2);
+  --inset-solid: rgba(10, 28, 30, 0.92);
+
+  --accent: #2dd4bf;
+  --accent-light: #99f6e4;
+  --accent-soft: rgba(45, 212, 191, 0.12);
+
+  --text: #dcf5f1;
+  --muted: #6f9a95;
+  --gold: #e8c547;
+
+  --danger: #7f1d3f;
+  --danger-light: #f43f5e;
+  --hp-red: #ff4d4d;
+  --hp-green: #2ecc71;
+
+  --border: rgba(45, 212, 191, 0.25);
+  --border-strong: #0f766e;
+  --btn-bg: #102729;
+
+  --radius: 8px;
+  --font-body: 'Segoe UI', 'Roboto', sans-serif;
+  --font-mono: 'Courier New', monospace;
+
+  --glow: 0 0 18px rgba(45, 212, 191, 0.35);
+  --card-open-glow: 0 0 18px rgba(45, 212, 191, 0.2);
+  --header-border: 2px solid var(--accent);
+  --title-shadow: 0 0 10px rgba(45, 212, 191, 0.55);
+  --title-spacing: 4px;
+
+  --mark-color: #f0abfc;
+  --mark-glow: 0 0 8px rgba(240, 171, 252, 0.6);
+
+  --badge-conc-fg: #f472b6;
+  --badge-ritual-fg: #a3e635;
+
+  /* Монеты кошелька: цвет металла одинаков в любой теме — он опознаёт
+     достоинство, а не оформление листа. */
+  --coin-pp: #dfe7ef;
+  --coin-gp: #ffd700;
+  --coin-sp: #a8a9ad;
+  --coin-cp: #b87333;
+}
