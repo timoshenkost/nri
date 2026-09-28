@@ -230,26 +230,13 @@ document.getElementById('rest-btn').addEventListener('click', () => {
     text: 'Заряды облика, ячейки и хиты восстановятся. Временные хиты пропадут.',
     confirmText: 'Отдохнуть',
     onConfirm: () => {
-      if (window.parent && window.parent !== window) {
-        window.parent.postMessage({ type: 'long-rest' }, '*');
-      } else {
-        LongRest.mark();
-        applyLongRest();
-        LongRest.seen('forms');
-      }
+      LongRest.request('forms', applyLongRest);
       showNotice('Силы восстановлены!');
     }
   });
 });
 
-window.addEventListener('message', e => {
-  if (!e.data || e.data.type !== 'long-rest-apply') return;
-  applyLongRest();
-  LongRest.seen('forms');
-});
-
-// Отдых мог случиться, пока вкладка стояла закрытой.
-LongRest.catchUp('forms', applyLongRest);
+LongRest.listen('forms', applyLongRest);
 render();
 applyFilter = initSearch(document.getElementById('search'), document.querySelector('main'));
 </script>

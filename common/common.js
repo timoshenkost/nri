@@ -39,6 +39,12 @@ const Store = {
     }
   },
 
+  /* Число из хранилища; мусор вместо числа — значение по умолчанию. */
+  number(key, fallback) {
+    const value = Number(this.get(key, fallback));
+    return Number.isFinite(value) ? value : fallback;
+  },
+
   remove(key) {
     try { localStorage.removeItem(this._full(key)); } catch (e) { /* игнорируем */ }
   },
@@ -312,6 +318,19 @@ function groupByTags(items, categoryOrder) {
   return [...groups.entries()].filter(([, list]) => list.length > 0);
 }
 
+/* Разбивка уже отсортированного списка на группы подряд идущих элементов
+   с одинаковым ключом: заклинания по кругам, реплики по уровню схемы. */
+function groupRuns(sorted, keyFn) {
+  const groups = [];
+  sorted.forEach(item => {
+    const key = keyFn(item);
+    const last = groups[groups.length - 1];
+    if (last && last.key === key) last.items.push(item);
+    else groups.push({ key, items: [item] });
+  });
+  return groups;
+}
+
 /* ------------------------------------------------------------------ *
  * Ресурсы «N применений до отдыха».
  * Одна реализация на ячейки заклинаний, слоты обликов, дневные изделия
@@ -374,6 +393,71 @@ const Resources = {
 };
 
 /* ------------------------------------------------------------------ *
+ * Хиты. Правила одни и для персонажа в шапке, и для гомункула Стиви,
+ * поэтому считаются они здесь, а хранит значения каждый сам.
+ * ------------------------------------------------------------------ */
+/* Число из окна ввода: знак не важен, кнопка сама говорит, урон это или
+   лечение, прибавить или потратить. 0 — ничего не делать. */
+function positiveAmount(raw) {
+  const amount = Math.abs(parseInt(raw, 10));
+  return Number.isFinite(amount) && amount > 0 ? amount : 0;
+}
+
+const HitPoints = {
+  color(current, max) {
+    const share = max > 0 ? current / max : 0;
+    if (share >= 1) return 'var(--hp-green)';
+    if (share > 0.5) return 'var(--text)';
+    if (share > 0.25) return 'var(--gold)';
+    return 'var(--hp-red)';
+  },
+
+  label(current, temp, max) {
+    return temp > 0 ? `${current} (+${temp}) / ${max}` : `${current} / ${max}`;
+  },
+
+  /* Урон сначала съедает временные хиты. */
+  damage(current, temp, amount) {
+    const absorbed = Math.min(temp, amount);
+    return { current: Math.max(0, current - (amount - absorbed)), temp: temp - absorbed };
+  },
+
+  /* Временные хиты не складываются: остаётся тот запас, что больше.
+     Возвращает null, если прежний запас оставлен как есть. */
+  higherTemp(temp, offered) {
+    if (offered > temp) return offered;
+    // С виду ничего не произошло, хотя кнопку нажали, — поясняем.
+    if (offered > 0) showNotice(`Прежний запас больше — оставлено ${temp}`);
+    return null;
+  },
+
+  /* Одно окно на урон, лечение и временные хиты. Колбэки получают уже
+     разобранное ненулевое число. */
+  promptChange({ text, onDamage, onHeal, onTemp }) {
+    const act = fn => v => { const n = positiveAmount(v); if (n) fn(n); };
+    Modal.prompt({
+      title: 'Урон или лечение',
+      text,
+      value: '',
+      actions: [
+        { label: 'Урон', className: 'btn-confirm', onClick: act(onDamage) },
+        { label: 'Лечение', className: 'btn-cancel', onClick: act(onHeal) },
+        { label: 'Временные', className: 'btn-cancel', onClick: act(onTemp) }
+      ]
+    });
+  },
+
+  promptTemp(temp, onSet) {
+    Modal.prompt({
+      title: 'Временные хиты',
+      text: 'Точное значение запаса. 0 — снять.',
+      value: temp,
+      onConfirm: value => onSet(Math.max(0, parseInt(value, 10) || 0))
+    });
+  }
+};
+
+/* ------------------------------------------------------------------ *
  * Длительный отдых.
  *
  * Оболочка подставляет iframe вкладки только при первом её открытии,
@@ -403,6 +487,30 @@ const LongRest = {
     if (missed) applyFn();
     this.seen(page);
     return missed;
+  },
+
+  /* Всё, что нужно странице с ресурсами до отдыха: слушать команду от
+     оболочки и добрать отдых, пропущенный, пока вкладка была закрыта. */
+  listen(page, applyFn) {
+    window.addEventListener('message', e => {
+      if (!e.data || e.data.type !== 'long-rest-apply') return;
+      applyFn();
+      this.seen(page);
+    });
+    this.catchUp(page, applyFn);
+  },
+
+  /* Кнопка отдыха только сообщает оболочке — та вернёт хиты и разошлёт
+     команду всем вкладкам, включая эту. Вне iframe оболочки нет, поэтому
+     отрабатываем сами. */
+  request(page, applyFn) {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: 'long-rest' }, '*');
+    } else {
+      this.mark();
+      applyFn();
+      this.seen(page);
+    }
   }
 };
 

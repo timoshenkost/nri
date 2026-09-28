@@ -156,16 +156,9 @@ function drawSection(container, items) {
   const sorted = [...items].sort((a, b) =>
     a.replica.scheme - b.replica.scheme || a.replica.name.localeCompare(b.replica.name));
 
-  const groups = [];
-  sorted.forEach(item => {
-    const level = item.replica.scheme;
-    if (!groups.length || groups[groups.length - 1].level !== level) groups.push({ level, items: [] });
-    groups[groups.length - 1].items.push(item);
-  });
-
-  container.innerHTML = groups.map(group => `
+  container.innerHTML = groupRuns(sorted, item => item.replica.scheme).map(group => `
     <div class="group">
-      <div class="section-header level-header">Схемы ${group.level} уровня</div>
+      <div class="section-header level-header">Схемы ${group.key} уровня</div>
       ${group.items.map(x => replicaCardHTML(x.replica, x.index)).join('')}
     </div>
   `).join('');

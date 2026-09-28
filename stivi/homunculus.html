@@ -169,12 +169,7 @@ const MODS_KEY = 'homunculus_mods';
 const HP_KEY = 'homunculus_hp';
 const TEMP_KEY = 'homunculus_temp_hp';
 
-function readNumber(key, fallback) {
-  const value = Number(Store.get(key, fallback));
-  return Number.isFinite(value) ? value : fallback;
-}
-
-let level = readNumber(LEVEL_KEY, LEVELS[0]);
+let level = Store.number(LEVEL_KEY, LEVELS[0]);
 if (!LEVELS.includes(level)) level = LEVELS[0];
 
 let installed = Store.get(MODS_KEY, []);
@@ -198,10 +193,10 @@ function maxHP() {
   return homunculusHP(level) + sum('hp');
 }
 
-let hp = Math.max(0, readNumber(HP_KEY, maxHP()));
+let hp = Math.max(0, Store.number(HP_KEY, maxHP()));
 /* Временные хиты живут отдельно: максимумом не ограничены, тратятся
    первыми и лечением не восстанавливаются — как у персонажа. */
-let tempHP = Math.max(0, readNumber(TEMP_KEY, 0));
+let tempHP = Math.max(0, Store.number(TEMP_KEY, 0));
 
 // Круг заклинания записан в данных как {ур} — подставляем число.
 function fill(text) {
@@ -262,13 +257,6 @@ function changes(upgrade) {
   return lines;
 }
 
-function hpColor(share) {
-  if (share >= 1) return 'var(--hp-green)';
-  if (share > 0.5) return 'var(--text)';
-  if (share > 0.25) return 'var(--gold)';
-  return 'var(--hp-red)';
-}
-
 function render() {
   const max = maxHP();
   hp = Math.max(0, Math.min(hp, max));
@@ -294,7 +282,7 @@ function render() {
                 title="Временные хиты — тратятся первыми"
                 aria-label="Временные хиты">+${tempHP}</button>
         <button class="hp-current" id="hp-current" type="button"
-                style="color: ${hpColor(max > 0 ? hp / max : 0)}"
+                style="color: ${HitPoints.color(hp, max)}"
                 title="Ввести урон, лечение или временные хиты"
                 aria-label="Ввести урон или лечение">${hp}</button>
         <span class="hp-divider">/</span>
@@ -340,16 +328,9 @@ function keepFull(change) {
   render();
 }
 
-function amountOf(raw) {
-  const amount = Math.abs(parseInt(raw, 10));
-  return Number.isFinite(amount) && amount > 0 ? amount : 0;
-}
-
 // Урон сначала съедает временные хиты, лечение их не возвращает.
 function damage(amount) {
-  const absorbed = Math.min(tempHP, amount);
-  tempHP -= absorbed;
-  hp = Math.max(0, hp - (amount - absorbed));
+  ({ current: hp, temp: tempHP } = HitPoints.damage(hp, tempHP, amount));
   render();
 }
 
@@ -358,41 +339,27 @@ function heal(amount) {
   render();
 }
 
-// Временные хиты не складываются: остаётся тот запас, что больше.
-function setTemp(value, keepHigher) {
-  const parsed = Math.max(0, parseInt(value, 10) || 0);
-  if (keepHigher && parsed <= tempHP) {
-    if (parsed > 0) showNotice(`Прежний запас больше — оставлено ${tempHP}`);
-    return;
-  }
-  tempHP = parsed;
+function setTemp(value) {
+  tempHP = value;
   render();
 }
 
 document.addEventListener('click', event => {
   if (event.target.closest('#hp-current')) {
-    Modal.prompt({
-      title: 'Урон или лечение',
-      text: tempHP > 0
-        ? `Сейчас ${hp} (+${tempHP}) / ${maxHP()}`
-        : `Сейчас ${hp} / ${maxHP()}`,
-      value: '',
-      actions: [
-        { label: 'Урон', className: 'btn-confirm', onClick: v => { const n = amountOf(v); if (n) damage(n); } },
-        { label: 'Лечение', className: 'btn-cancel', onClick: v => { const n = amountOf(v); if (n) heal(n); } },
-        { label: 'Временные', className: 'btn-cancel', onClick: v => { const n = amountOf(v); if (n) setTemp(n, true); } }
-      ]
+    HitPoints.promptChange({
+      text: `Сейчас ${HitPoints.label(hp, tempHP, maxHP())}`,
+      onDamage: damage,
+      onHeal: heal,
+      onTemp: n => {
+        const next = HitPoints.higherTemp(tempHP, n);
+        if (next !== null) setTemp(next);
+      }
     });
     return;
   }
 
   if (event.target.closest('#hp-temp')) {
-    Modal.prompt({
-      title: 'Временные хиты',
-      text: 'Точное значение запаса. 0 — снять.',
-      value: tempHP,
-      onConfirm: value => setTemp(value, false)
-    });
+    HitPoints.promptTemp(tempHP, setTemp);
     return;
   }
 

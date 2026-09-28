@@ -81,39 +81,51 @@
 
   document.body.append(nav, content, backup, purse);
 
-  /* --- Хиты -------------------------------------------------------- */
+  /* --- Общие окна --------------------------------------------------
+     Кошелёк и сохранение закрываются одинаково: крестиком, кликом мимо
+     карточки и Escape. Если поверх стоит окно ввода, Escape достаётся
+     ему, а не тому, что под ним. */
 
-  function readNumber(key, fallback) {
-    const value = Number(Store.get(key, fallback));
-    return Number.isFinite(value) ? value : fallback;
+  function bindOverlay(overlay, closeBtnId) {
+    const close = () => overlay.classList.remove('is-open');
+    document.getElementById(closeBtnId).addEventListener('click', close);
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape' || !overlay.classList.contains('is-open')) return;
+      const input = document.getElementById('modal-overlay');
+      if (input && input.classList.contains('is-open')) return;
+      close();
+    });
+    return close;
   }
 
-  let maxHP = Math.max(1, readNumber('my_max_hp', DEFAULT_HP));
-  let currentHP = Math.max(0, Math.min(readNumber('my_hp', maxHP), maxHP));
+  /* --- Хиты --------------------------------------------------------
+     Перенос старых данных идёт первым: хиты должны читаться уже после
+     него, иначе на первом запуске показались бы значения по умолчанию. */
+
+  const moved = migrateLegacyKeys();
+  if (moved) {
+    // Перенос мог подхватить данные другого листа, если раньше оба жили на
+    // одном origin с общими ключами — просим проверить.
+    setTimeout(() => showNotice('Перенесены данные старой версии — проверьте хиты'), 400);
+  }
+
+  let maxHP = Math.max(1, Store.number('my_max_hp', DEFAULT_HP));
+  let currentHP = Math.max(0, Math.min(Store.number('my_hp', maxHP), maxHP));
   /* Временные хиты — отдельный запас: не ограничен максимумом, тратится
      первым, не восстанавливается лечением и пропадает после отдыха. */
-  let tempHP = Math.max(0, readNumber('my_temp_hp', 0));
+  let tempHP = Math.max(0, Store.number('my_temp_hp', 0));
 
   const hpCurrentEl = document.getElementById('hp-current');
   const hpMaxEl = document.getElementById('hp-max');
   const hpTempEl = document.getElementById('hp-temp');
-
-  function hpLabel() {
-    return tempHP > 0 ? `${currentHP} (+${tempHP}) / ${maxHP}` : `${currentHP} / ${maxHP}`;
-  }
 
   function updateHPUI() {
     hpCurrentEl.textContent = currentHP;
     hpMaxEl.textContent = maxHP;
     hpTempEl.textContent = tempHP;
     hpTempEl.hidden = tempHP === 0;
-
-    const share = maxHP > 0 ? currentHP / maxHP : 0;
-    hpCurrentEl.style.color =
-      share >= 1 ? 'var(--hp-green)' :
-      share > 0.5 ? 'var(--text)' :
-      share > 0.25 ? 'var(--gold)' :
-      'var(--hp-red)';
+    hpCurrentEl.style.color = HitPoints.color(currentHP, maxHP);
   }
 
   function commitHP() {
@@ -125,12 +137,9 @@
     setTimeout(() => { hpCurrentEl.style.transform = 'scale(1)'; }, 100);
   }
 
-  /* Урон сначала съедает временные хиты. Уведомлений нет: результат виден
-     в самой шапке. */
+  /* Уведомлений нет: результат виден в самой шапке. */
   function applyDamage(amount) {
-    const absorbed = Math.min(tempHP, amount);
-    tempHP -= absorbed;
-    currentHP = Math.max(0, currentHP - (amount - absorbed));
+    ({ current: currentHP, temp: tempHP } = HitPoints.damage(currentHP, tempHP, amount));
     commitHP();
   }
 
@@ -140,18 +149,8 @@
     commitHP();
   }
 
-  function setTempHP(value, { keepHigher = false } = {}) {
-    const parsed = Math.max(0, parseInt(value, 10) || 0);
-
-    // Временные хиты не складываются: остаётся тот запас, что больше.
-    if (keepHigher && parsed <= tempHP) {
-      // Единственный случай, когда без подсказки непонятно: с виду ничего
-      // не произошло, хотя кнопку нажали.
-      if (parsed > 0) showNotice(`Прежний запас больше — оставлено ${tempHP}`);
-      return;
-    }
-
-    tempHP = parsed;
+  function setTempHP(value) {
+    tempHP = value;
     commitHP();
   }
 
@@ -167,34 +166,21 @@
     commitHP();
   }
 
-  function fromInput(raw) {
-    const amount = Math.abs(parseInt(raw, 10));
-    return Number.isFinite(amount) && amount > 0 ? amount : 0;
-  }
-
   document.getElementById('hp-full').addEventListener('click', restoreHP);
 
   hpCurrentEl.addEventListener('click', () => {
-    Modal.prompt({
-      title: 'Урон или лечение',
-      text: `Сейчас ${hpLabel()}`,
-      value: '',
-      actions: [
-        { label: 'Урон', className: 'btn-confirm', onClick: v => { const n = fromInput(v); if (n) applyDamage(n); } },
-        { label: 'Лечение', className: 'btn-cancel', onClick: v => { const n = fromInput(v); if (n) applyHeal(n); } },
-        { label: 'Временные', className: 'btn-cancel', onClick: v => { const n = fromInput(v); if (n) setTempHP(n, { keepHigher: true }); } }
-      ]
+    HitPoints.promptChange({
+      text: `Сейчас ${HitPoints.label(currentHP, tempHP, maxHP)}`,
+      onDamage: applyDamage,
+      onHeal: applyHeal,
+      onTemp: n => {
+        const next = HitPoints.higherTemp(tempHP, n);
+        if (next !== null) setTempHP(next);
+      }
     });
   });
 
-  hpTempEl.addEventListener('click', () => {
-    Modal.prompt({
-      title: 'Временные хиты',
-      text: 'Точное значение запаса. 0 — снять.',
-      value: tempHP,
-      onConfirm: value => setTempHP(value)
-    });
-  });
+  hpTempEl.addEventListener('click', () => HitPoints.promptTemp(tempHP, setTempHP));
 
   hpMaxEl.addEventListener('click', () => {
     Modal.prompt({
@@ -305,11 +291,11 @@
       value: '',
       actions: [
         { label: 'Добавить', className: 'btn-confirm', onClick: v => {
-            const n = fromInput(v);
+            const n = positiveAmount(v);
             if (n) changeMoney(key, n);
           } },
         { label: 'Потратить', className: 'btn-cancel', onClick: v => {
-            const n = fromInput(v);
+            const n = positiveAmount(v);
             if (!n) return;
             if (n > money[key]) {
               showNotice(`Не хватает: в кошельке ${money[key]} ${coin.short}`);
@@ -327,30 +313,18 @@
     });
   }
 
-  function closePurse() { purse.classList.remove('is-open'); }
+  bindOverlay(purse, 'purse-close');
 
   document.getElementById('purse-btn').addEventListener('click', () => {
     purse.classList.add('is-open');
   });
 
-  document.getElementById('purse-close').addEventListener('click', closePurse);
-
   purse.addEventListener('click', e => {
-    if (e.target === purse) { closePurse(); return; }
-
     const step = e.target.closest('[data-coin]');
     if (step) { changeMoney(step.dataset.coin, Number(step.dataset.delta)); return; }
 
     const edit = e.target.closest('[data-coin-edit]');
     if (edit) promptCoin(edit.dataset.coinEdit);
-  });
-
-  document.addEventListener('keydown', e => {
-    if (e.key !== 'Escape' || !purse.classList.contains('is-open')) return;
-    // Поверх кошелька может стоять окно ввода — тогда Escape закрывает его.
-    const input = document.getElementById('modal-overlay');
-    if (input && input.classList.contains('is-open')) return;
-    closePurse();
   });
 
   updateMoneyUI();
@@ -378,17 +352,11 @@
 
   const backupText = document.getElementById('backup-text');
 
-  function closeBackup() { backup.classList.remove('is-open'); }
+  const closeBackup = bindOverlay(backup, 'backup-close');
 
   document.getElementById('backup-btn').addEventListener('click', () => {
     backupText.value = Backup.collect();
     backup.classList.add('is-open');
-  });
-
-  document.getElementById('backup-close').addEventListener('click', closeBackup);
-  backup.addEventListener('click', e => { if (e.target === backup) closeBackup(); });
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && backup.classList.contains('is-open')) closeBackup();
   });
 
   document.getElementById('backup-download').addEventListener('click', () => {
@@ -463,18 +431,6 @@
   window.addEventListener('orientationchange', () => setTimeout(fitToViewport, 200));
 
   /* --- Старт ------------------------------------------------------- */
-
-  const moved = migrateLegacyKeys();
-  if (moved) {
-    // Перенос мог подхватить данные другого листа, если раньше оба жили на
-    // одном origin с общими ключами — просим проверить.
-    setTimeout(() => showNotice('Перенесены данные старой версии — проверьте хиты'), 400);
-  }
-
-  // Значения могли приехать миграцией уже после первого чтения.
-  maxHP = Math.max(1, readNumber('my_max_hp', DEFAULT_HP));
-  currentHP = Math.max(0, Math.min(readNumber('my_hp', maxHP), maxHP));
-  tempHP = Math.max(0, readNumber('my_temp_hp', 0));
 
   updateHPUI();
 

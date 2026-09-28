@@ -156,19 +156,6 @@ const Spellbook = (() => {
     render();
   }
 
-  /* Кнопка отдыха только сообщает оболочке — та вернёт хиты и разошлёт
-     команду всем вкладкам, включая эту. Вне iframe оболочки нет, поэтому
-     отрабатываем сами. */
-  function requestLongRest() {
-    if (window.parent && window.parent !== window) {
-      window.parent.postMessage({ type: 'long-rest' }, '*');
-    } else {
-      LongRest.mark();
-      applyLongRest();
-      LongRest.seen('spellbook');
-    }
-  }
-
   function togglePrepared(index) {
     const spell = spells[index];
     if (!spell || spell.locked) return;
@@ -261,18 +248,9 @@ const Spellbook = (() => {
     const sorted = [...items].sort((a, b) =>
       a.spell.levelNum - b.spell.levelNum || a.spell.name.localeCompare(b.spell.name));
 
-    const groups = [];
-    sorted.forEach(item => {
-      const level = item.spell.levelNum;
-      if (!groups.length || groups[groups.length - 1].level !== level) {
-        groups.push({ level, items: [] });
-      }
-      groups[groups.length - 1].items.push(item);
-    });
-
-    container.innerHTML = groups.map(group => `
+    container.innerHTML = groupRuns(sorted, item => item.spell.levelNum).map(group => `
       <div class="group">
-        <div class="section-header level-header">${group.level === 0 ? 'Заговоры' : `${group.level} Круг`}</div>
+        <div class="section-header level-header">${group.key === 0 ? 'Заговоры' : `${group.key} Круг`}</div>
         ${group.items.map(item => spellCardHTML(item.spell, item.index)).join('')}
       </div>
     `).join('');
@@ -350,16 +328,10 @@ const Spellbook = (() => {
         text: 'Ячейки, способности и хиты восстановятся. Временные хиты пропадут.',
         confirmText: 'Отдохнуть',
         onConfirm: () => {
-          requestLongRest();
+          LongRest.request('spellbook', applyLongRest);
           showNotice('Силы восстановлены!');
         }
       });
-    });
-
-    window.addEventListener('message', e => {
-      if (!e.data || e.data.type !== 'long-rest-apply') return;
-      applyLongRest();
-      LongRest.seen('spellbook');
     });
   }
 
@@ -369,8 +341,7 @@ const Spellbook = (() => {
     preparedList = document.getElementById('prepared-list');
     availableList = document.getElementById('available-list');
     bind();
-    // Отдых мог случиться, пока вкладка стояла закрытой.
-    LongRest.catchUp('spellbook', applyLongRest);
+    LongRest.listen('spellbook', applyLongRest);
     render();
     applyFilter = initSearch(document.getElementById('search'), document.querySelector('main'));
   }
