@@ -282,7 +282,7 @@ function replicaCardHTML(replica, index) {
     : '';
 
   const haystack = [
-    replica.name, replica.type, replica.description,
+    replica.name, replica.type, replica.description, replica.look,
     replica.attunement ? 'настройка' : '',
     replica.table ? replica.table.rows.map(row => row.join(' ')).join(' ') : ''
   ].join(' ').toLowerCase();
@@ -307,6 +307,7 @@ function replicaCardHTML(replica, index) {
         </div>
         <p style="white-space: pre-line;">${esc(replica.description)}</p>
         ${tableHTML(replica.table)}
+        ${replica.look ? `<p class="spell-roleplay">${esc(replica.look)}</p>` : ''}
         ${chargesHTML(replica, index)}
       </div>
     </details>
