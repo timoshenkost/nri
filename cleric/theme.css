@@ -1,0 +1,52 @@
+/* Тема Торвека — жрец домена магии: сапфировая ночь храма,
+   золото священного символа и голубые руны чистой магии. */
+
+:root {
+  --page-bg: radial-gradient(circle at 50% 0%, #17224a, #070b1c 80%);
+
+  --surface: #0d1530;
+  --card: #121c3d;
+  --card-open: #18244d;
+  --inset: rgba(0, 0, 0, 0.2);
+  --inset-solid: rgba(13, 21, 48, 0.92);
+
+  --accent: #60a5fa;
+  --accent-light: #bfdbfe;
+  --accent-soft: rgba(96, 165, 250, 0.12);
+
+  --text: #e3ebfb;
+  --muted: #7b8bb0;
+  --gold: #fbbf24;
+
+  --danger: #7f1d1d;
+  --danger-light: #f87171;
+  --hp-red: #ff4d4d;
+  --hp-green: #2ecc71;
+
+  --border: rgba(96, 165, 250, 0.25);
+  --border-strong: #1d4ed8;
+  --btn-bg: #131d3f;
+
+  --radius: 8px;
+  --font-body: 'Segoe UI', 'Roboto', sans-serif;
+  --font-mono: 'Courier New', monospace;
+
+  --glow: 0 0 18px rgba(96, 165, 250, 0.35);
+  --card-open-glow: 0 0 18px rgba(96, 165, 250, 0.2);
+  --header-border: 2px solid var(--gold);
+  --title-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+  --title-spacing: 4px;
+
+  --mark-color: #fbbf24;
+  --mark-glow: 0 0 8px rgba(251, 191, 36, 0.6);
+
+  --badge-conc-fg: #f472b6;
+  --badge-ritual-fg: #a3e635;
+
+  /* Монеты кошелька: цвет металла одинаков в любой теме — он опознаёт
+     достоинство, а не оформление листа. */
+  --coin-pp: #dfe7ef;
+  --coin-gp: #ffd700;
+  --coin-sp: #a8a9ad;
+  --coin-cp: #b87333;
+}
